@@ -1,0 +1,13 @@
+{
+  "name": "preparea",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PrepArea — study community for competitive-exam aspirants",
+  "scripts": {
+    "dev": "npm --prefix apps/web run dev",
+    "build": "npm --prefix apps/web run build",
+    "web:dev": "npm --prefix apps/web run dev",
+    "app:dev": "npm --prefix apps/app run start"
+  },
+  "workspaces": []
+}
