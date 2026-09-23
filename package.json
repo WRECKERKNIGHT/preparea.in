@@ -9,5 +9,8 @@
     "web:dev": "npm --prefix apps/web run dev",
     "app:dev": "npm --prefix apps/app run start"
   },
-  "workspaces": []
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }
