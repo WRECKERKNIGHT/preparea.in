@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Mic, ShieldCheck, NotebookPen } from "lucide-react";
 import Link from "next/link";
+import { PageHeader } from "@/components/page-header";
+import { Reveal } from "@/components/fx/reveal";
+import { Tilt } from "@/components/fx/tilt";
+import { Magnetic } from "@/components/fx/magnetic";
 
 export const metadata: Metadata = {
   title: "Mentors",
@@ -26,91 +30,109 @@ const principles = [
 export default function MentorsPage() {
   return (
     <>
-      <section className="border-b border-edge bg-paper">
-        <div className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-            Mentors
-          </p>
-          <h1 className="mt-3 font-serif text-4xl font-medium text-ink">
-            You&apos;ve done the journey. Help someone through it.
-          </h1>
-          <p className="mt-4 text-ink-muted">
-            Practical guidance from experienced aspirants — for students,
-            delivered honestly.
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        kicker="Mentors"
+        title={
+          <>
+            You&apos;ve done the journey.{" "}
+            <span className="text-gradient-gold">Help someone</span> through it.
+          </>
+        }
+        intro="Practical guidance from experienced aspirants — for students, delivered honestly."
+      />
 
-      <section className="bg-raised">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <p className="mb-6 text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-            Example session topics
-          </p>
-          <ul className="grid gap-px overflow-hidden rounded-[6px] border border-edge bg-edge sm:grid-cols-2 lg:grid-cols-3">
-            {topics.map((topic) => (
-              <li
-                key={topic}
-                className="flex items-center gap-3 bg-raised px-5 py-4 font-serif text-base text-ink"
-              >
-                <Mic className="size-4 shrink-0 text-accent" aria-hidden="true" />
-                {topic}
-              </li>
+      <section className="bg-raised py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <Reveal>
+            <p className="clay-chip mb-6 inline-flex items-center gap-2 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+              Example session topics
+            </p>
+          </Reveal>
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {topics.map((topic, i) => (
+              <Reveal key={topic} delay={(i % 3) * 0.07}>
+                <li className="clay-card flex items-center gap-3 px-6 py-5">
+                  <span className="clay-icon size-9 shrink-0 rounded-xl bg-gradient-to-br from-plum-soft to-plum text-white">
+                    <Mic className="size-4" aria-hidden="true" />
+                  </span>
+                  <span className="font-display text-base font-bold text-ink">
+                    {topic}
+                  </span>
+                </li>
+              </Reveal>
             ))}
           </ul>
 
-          <div className="mt-14 grid gap-4 lg:grid-cols-3">
+          <div className="mt-12 grid gap-5 lg:grid-cols-3">
             {[
               {
                 icon: Mic,
                 title: "Short, structured sessions",
                 body: "30–45 minutes including Q&A. Scheduled in advance, announced on Telegram.",
+                accent: "from-plum-soft to-plum",
               },
               {
                 icon: ShieldCheck,
                 title: "Verified, honest mentors",
                 body: "Every mentor is verified before hosting. No inflated claims, no promises.",
+                accent: "from-accent-light to-accent",
               },
               {
                 icon: NotebookPen,
                 title: "Experience over expertise",
                 body: "Mentors share what worked for them — they aren't standing in for teachers or coaching.",
+                accent: "from-gold-light to-gold",
               },
-            ].map(({ icon: Icon, title, body }) => (
-              <div key={title} className="card p-6">
-                <Icon className="size-5 text-accent" aria-hidden="true" />
-                <h2 className="mt-3 font-serif text-lg font-medium text-ink">
-                  {title}
-                </h2>
-                <p className="mt-2 text-sm text-ink-muted">{body}</p>
-              </div>
+            ].map(({ icon: Icon, title, body, accent }, i) => (
+              <Reveal key={title} delay={i * 0.1}>
+                <Tilt max={8}>
+                  <div className="clay-card-deep h-full p-7">
+                    <span
+                      className={`clay-icon size-12 rounded-[18px] bg-gradient-to-br ${accent} text-ink`}
+                    >
+                      <Icon className="size-6" aria-hidden="true" />
+                    </span>
+                    <h2 className="mt-4 font-display text-xl font-black text-ink">
+                      {title}
+                    </h2>
+                    <p className="mt-2 text-sm text-ink-muted">{body}</p>
+                  </div>
+                </Tilt>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="border-t border-edge bg-paper">
-        <div className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6">
-          <h2 className="font-serif text-2xl font-medium text-ink">
+      <section className="bg-paper py-16 text-center">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6">
+          <h2 className="font-display text-3xl font-black text-ink">
             What mentors commit to
           </h2>
-          <ul className="mx-auto mt-6 max-w-xl space-y-3">
-            {principles.map((p) => (
-              <li
-                key={p}
-                className="flex items-start gap-3 text-left text-sm text-ink-muted"
-              >
-                <span className="mt-1.5 size-2 shrink-0 rounded-full bg-accent" />
-                {p}
-              </li>
+          <ul className="mx-auto mt-8 grid max-w-xl grid-cols-1 gap-3 text-left">
+            {principles.map((p, i) => (
+              <Reveal key={p} delay={i * 0.07}>
+                <li className="clay-card flex items-start gap-3 px-6 py-4 text-sm text-ink">
+                  <span className="mt-1.5 size-2.5 shrink-0 rounded-full bg-gold-deep" />
+                  {p}
+                </li>
+              </Reveal>
             ))}
           </ul>
-          <p className="mt-10 text-sm text-ink-muted">
-            Interested in mentoring?{" "}
-            <Link href="/register" className="font-semibold text-accent hover:text-accent-hover">
-              Join the community
-            </Link>{" "}
-            and mention it — we&apos;ll get in touch.
-          </p>
+          <Reveal delay={0.2}>
+            <p className="mt-10 text-ink-muted">
+              Interested in mentoring?{" "}
+              <Magnetic strength={0.2}>
+                <Link
+                  href="/register"
+                  className="font-bold text-accent underline decoration-gold underline-offset-4 hover:text-accent-hover"
+                >
+                  Join the community
+                </Link>
+              </Magnetic>{" "}
+              and mention it — we&apos;ll get in touch.
+            </p>
+          </Reveal>
         </div>
       </section>
     </>
