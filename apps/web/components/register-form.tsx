@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, LoaderCircle } from "lucide-react";
+import { ArrowRight, LoaderCircle, Sparkles } from "lucide-react";
 import type { RegisterInput } from "@preparea/shared";
 
 const CHALLENGES = [
@@ -73,6 +73,16 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={onSubmit} className="mt-10 grid gap-5">
+      <div className="flex items-center gap-3 rounded-2xl border border-gold/40 bg-gradient-to-r from-gold/15 via-raised to-plum/10 px-4 py-3">
+        <span className="clay-icon size-9 shrink-0 rounded-xl bg-gradient-to-br from-gold-light to-gold text-gold-deep">
+          <Sparkles className="size-4" aria-hidden="true" />
+        </span>
+        <p className="text-sm text-ink-muted">
+          <span className="font-bold text-ink">7 days free</span> — join free,
+          no card needed. Everything is open during your trial.
+        </p>
+      </div>
+
       <div>
         <label htmlFor="name" className="label">
           Full name
