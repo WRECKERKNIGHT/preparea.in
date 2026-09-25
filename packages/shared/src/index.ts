@@ -160,6 +160,38 @@ export function minMax(value: number, min: number, max: number): boolean {
 
 export const MOCK_ALLOWED: string[] = ["1", "2", "3", "4", "5", "6", "7"];
 
+export const TRIAL_DAYS = 7;
+
+export interface TrialInfo {
+  startedAt: string;
+  endsAt: string;
+  daysTotal: number;
+  daysRemaining: number;
+  active: boolean;
+  expired: boolean;
+}
+
+export function trialInfo(createdAt?: string): TrialInfo {
+  const start = createdAt ? new Date(createdAt) : new Date();
+  const endsAt = new Date(start);
+  endsAt.setDate(endsAt.getDate() + TRIAL_DAYS);
+  const endTime = endsAt.getTime();
+  const exposedEnd = new Date();
+  exposedEnd.setHours(23, 59, 59, 999);
+  const daysRemaining = Math.max(
+    0,
+    Math.ceil((endTime - Date.now()) / (1000 * 60 * 60 * 24))
+  );
+  return {
+    startedAt: start.toISOString(),
+    endsAt: endsAt.toISOString(),
+    daysTotal: TRIAL_DAYS,
+    daysRemaining,
+    active: Date.now() < endTime,
+    expired: Date.now() >= endTime,
+  };
+}
+
 export function otpCode(): string {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
@@ -171,6 +203,7 @@ export interface DayBuckets {
 
 export interface DashboardMe {
   student: Student;
+  trial: TrialInfo;
   todayMinutes: number;
   todayTargetMin: number;
   weekMinutes: number;
