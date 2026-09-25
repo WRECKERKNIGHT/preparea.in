@@ -291,7 +291,7 @@ function AuthenticatedView({
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm text-ink-faint">{hon()},</p>
-          <h1 className="font-serif text-3xl font-medium text-ink sm:text-4xl">
+          <h1 className="font-display text-4xl font-black tracking-tight text-ink sm:text-5xl">
             {student.name}
           </h1>
           <p className="mt-1 text-sm text-ink-muted">
@@ -367,12 +367,14 @@ function Stat({
   sub?: string;
 }) {
   return (
-    <div className="card p-5">
-      <Icon className="size-5 text-accent" aria-hidden="true" />
-      <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-ink-faint">
+    <div className="clay-card-deep p-5">
+      <span className="clay-icon size-10 rounded-xl bg-gradient-to-br from-accent-light to-accent text-accent">
+        <Icon className="size-5" aria-hidden="true" />
+      </span>
+      <p className="mt-3 text-xs font-bold uppercase tracking-wider text-ink-faint">
         {label}
       </p>
-      <p className="mt-1 font-serif text-2xl font-medium text-ink number">{value}</p>
+      <p className="mt-1 font-display text-2xl font-black text-ink number">{value}</p>
       {sub ? <p className="mt-0.5 text-xs text-ink-faint">{sub}</p> : null}
     </div>
   );
@@ -382,23 +384,23 @@ function WeeklyChart({ buckets }: { buckets: DashboardMe["weekBuckets"] }) {
   const max = Math.max(60, ...buckets.map((b) => b.minutes));
   const todayIdx = buckets.length - 1;
   return (
-    <section className="card p-6">
+    <section className="clay-card-deep p-6">
       <div className="flex items-center justify-between">
-        <h2 className="font-medium text-ink">Last 7 days</h2>
-        <span className="text-xs text-ink-faint">minutes studied</span>
+        <h2 className="font-display text-lg font-bold text-ink">Last 7 days</h2>
+        <span className="text-xs font-semibold text-ink-faint">minutes studied</span>
       </div>
       <div className="mt-6 flex h-40 items-end justify-between gap-3">
         {buckets.map((b, i) => (
           <div key={i} className="flex flex-1 flex-col items-center gap-2">
-            <span className="text-[11px] text-ink-faint number">{b.minutes}</span>
+            <span className="text-[11px] font-medium text-ink-faint number">{b.minutes}</span>
             <div
-              className={`w-full max-w-9 rounded-[4px] ${i === todayIdx ? "bg-accent" : "bg-accent/35"}`}
+              className={`w-full max-w-9 rounded-full ${i === todayIdx ? "bg-gradient-to-b from-accent to-accent-deep" : "bg-accent/30"}`}
               style={{ height: `${Math.max(4, (b.minutes / max) * 100)}%` }}
               role="img"
               aria-label={`${b.label}: ${b.minutes} minutes`}
             />
             <span
-              className={`text-[11px] ${i === todayIdx ? "font-semibold text-accent" : "text-ink-faint"}`}
+              className={`text-[11px] font-medium ${i === todayIdx ? "font-bold text-accent" : "text-ink-faint"}`}
             >
               {b.label}
             </span>

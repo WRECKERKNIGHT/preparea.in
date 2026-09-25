@@ -1,7 +1,8 @@
-import { CheckCircle2, ArrowRight, Send, MessagesSquare } from "lucide-react";
+import { CheckCircle2, ArrowRight, Send, MessagesSquare, Sparkles } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getSettings } from "@/lib/settings";
+import { Reveal } from "@/components/fx/reveal";
 
 export const metadata: Metadata = {
   title: "You're in",
@@ -51,52 +52,74 @@ export default async function SuccessPage({
   ];
 
   return (
-    <section className="bg-paper">
+    <section className="relative overflow-hidden bg-paper">
+      <div
+        className="absolute inset-0 -z-10"
+        style={{
+          backgroundImage:
+            "radial-gradient(700px 400px at 50% -10%, rgba(240,184,74,0.18), transparent 60%)",
+        }}
+        aria-hidden="true"
+      />
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-20">
-        <div className="text-center">
-          <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-accent-light text-accent">
-            <CheckCircle2 className="size-7" aria-hidden="true" />
-          </span>
-          <h1 className="mt-5 font-serif text-3xl font-medium text-ink sm:text-4xl">
-            You&apos;re in.
-          </h1>
-          <p className="mt-3 text-ink-muted">
-            Here&apos;s what to do next — under five minutes, then you can be in
-            a study room tonight.
-          </p>
-        </div>
+        <Reveal>
+          <div className="text-center">
+            <span className="clay-icon mx-auto size-16 rounded-full bg-gradient-to-br from-accent-light to-accent text-accent">
+              <CheckCircle2 className="size-8" aria-hidden="true" />
+            </span>
+            <h1 className="mt-6 font-display text-4xl font-black leading-tight text-ink sm:text-5xl">
+              You&apos;re <span className="text-gradient-gold">in.</span>
+            </h1>
+            <p className="mt-4 text-lg text-ink-muted">
+              Here&apos;s what to do next — under five minutes, then you can be
+              in a study room tonight.
+            </p>
+          </div>
+        </Reveal>
 
         <ol className="mt-12 space-y-4">
           {steps.map((step, i) => (
-            <li key={step.title} className="card flex gap-4 p-6">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent-light font-serif text-sm font-semibold text-accent">
-                {i + 1}
-              </span>
-              <div className="min-w-0">
-                <h2 className="font-medium text-ink">{step.title}</h2>
-                <p className="mt-1 text-sm text-ink-muted">{step.body}</p>
-                {step.link ? (
-                  <a
-                    href={step.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent-hover"
-                  >
-                    {step.linkLabel}
-                    <ArrowRight className="size-4" aria-hidden="true" />
-                  </a>
-                ) : null}
-              </div>
-            </li>
+            <Reveal key={step.title} delay={i * 0.07}>
+              <li className="clay-card-deep flex gap-4 p-6">
+                <span className="clay-icon mt-0.5 size-9 shrink-0 rounded-full bg-gradient-to-br from-gold-light to-gold text-gold-deep font-display text-base font-black">
+                  {i + 1}
+                </span>
+                <div className="min-w-0">
+                  <h2 className="font-display text-lg font-bold text-ink">
+                    {step.title}
+                  </h2>
+                  <p className="mt-1 text-sm text-ink-muted">{step.body}</p>
+                  {step.link ? (
+                    <a
+                      href={step.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-accent underline decoration-gold underline-offset-4 hover:text-accent-hover"
+                    >
+                      {step.linkLabel}
+                      <ArrowRight className="size-4" aria-hidden="true" />
+                    </a>
+                  ) : null}
+                </div>
+              </li>
+            </Reveal>
           ))}
         </ol>
 
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <Link href="/dashboard" className="btn-primary">
-            Open your dashboard
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </Link>
-        </div>
+        <Reveal delay={0.2}>
+          <div className="mt-12 flex flex-col items-center justify-center gap-3">
+            <span className="clay-btn clay-btn-emerald px-8 py-4 text-base">
+              <Link href="/dashboard" className="inline-flex items-center gap-2">
+                Open your dashboard
+                <ArrowRight className="size-5" aria-hidden="true" />
+              </Link>
+            </span>
+            <p className="mt-3 inline-flex items-center gap-2 text-xs text-ink-faint">
+              <Sparkles className="size-3.5 text-gold-deep" aria-hidden="true" />
+              Your journey begins tonight.
+            </p>
+          </div>
+        </Reveal>
       </div>
     </section>
   );
