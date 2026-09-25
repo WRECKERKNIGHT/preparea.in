@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { Newsreader, Inter } from "next/font/google";
+import { Newsreader, Inter, Fraunces } from "next/font/google";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { Stars } from "@/components/fx/stars";
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -13,6 +14,12 @@ const newsreader = Newsreader({
 
 const inter = Inter({
   variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
   display: "swap",
 });
@@ -39,8 +46,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${newsreader.variable} ${inter.variable}`}>
-      <body className="min-h-full flex flex-col">
+    <html lang="en" className={`${newsreader.variable} ${inter.variable} ${fraunces.variable}`}>
+      <body className="min-h-full flex flex-col pt-16">
+        <Stars />
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
