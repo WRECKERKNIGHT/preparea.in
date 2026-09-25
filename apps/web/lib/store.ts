@@ -15,7 +15,7 @@ import type {
   PublicSettings,
   ChallengeParticipant,
 } from "@preparea/shared";
-import { normalizeEmail, isEmail, otpCode, minMax } from "@preparea/shared";
+import { normalizeEmail, isEmail, otpCode, minMax, trialInfo } from "@preparea/shared";
 import type { CheckinStatus } from "@preparea/shared";
 import { getSheetsAdmin } from "@/lib/sheets";
 
@@ -461,6 +461,7 @@ class MockStore {
 
     return {
       student,
+      trial: trialInfo(student.createdAt),
       todayMinutes,
       todayTargetMin:
         lastCheckinToday?.targetMin ?? student.dailyTargetMin,
@@ -912,6 +913,7 @@ class SheetsStore implements Store {
 
     return {
       student,
+      trial: trialInfo(student.createdAt),
       todayMinutes,
       todayTargetMin:
         lastCheckin?.date === today ? lastCheckin.targetMin : student.dailyTargetMin,
