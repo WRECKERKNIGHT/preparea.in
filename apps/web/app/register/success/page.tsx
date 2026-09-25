@@ -74,6 +74,10 @@ export default async function SuccessPage({
               Here&apos;s what to do next — under five minutes, then you can be
               in a study room tonight.
             </p>
+            <p className="mx-auto mt-3 inline-flex max-w-md items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-4 py-1.5 text-xs font-semibold text-gold-deep">
+              <Sparkles className="size-3.5" aria-hidden="true" />
+              7 days of free trial on your account — no card needed.
+            </p>
           </div>
         </Reveal>
 

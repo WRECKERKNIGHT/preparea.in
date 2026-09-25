@@ -39,7 +39,7 @@ const faqs = [
   },
   {
     q: "Is it free?",
-    a: "The first cohort and 7-Day Challenge are free. After we prove value, selected premium features may be tested as a paid membership.",
+    a: "Everyone gets a 7-day free trial — no card needed. The first cohort and 7-Day Challenge start inside it. After the trial, the community stays affordable, and selected premium features may be tested as a paid membership.",
   },
   {
     q: "Will there be a proper app?",

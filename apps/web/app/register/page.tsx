@@ -31,7 +31,8 @@ export default function RegisterPage() {
               Join the <span className="text-gradient-gold">first cohort</span>
             </h1>
             <p className="mt-4 text-lg text-ink-muted">
-              Free for the first 20 students. Two minutes, and you&rsquo;re in.
+              Free for the first 20 students — with a 7-day free trial for
+              everything else. Two minutes, and you&rsquo;re in.
             </p>
           </div>
         </Reveal>

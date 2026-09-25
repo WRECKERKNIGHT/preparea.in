@@ -337,8 +337,9 @@ export default function LandingPage() {
                 people who come back tomorrow.
               </h2>
               <p className="mx-auto mt-6 max-w-lg text-lg text-white/70">
-                Registration is free for the first cohort. Spots are limited so
-                the rooms stay focused.
+                Registration is free for the first cohort. Your first{" "}
+                <span className="font-bold text-white">7 days are a free
+                trial</span> — no card, no gimmicks.
               </p>
             </Reveal>
             <Reveal delay={0.15}>
