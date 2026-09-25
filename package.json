@@ -12,5 +12,12 @@
   "workspaces": [
     "apps/*",
     "packages/*"
+  ],
+  "trustedDependencies": [
+    "lightningcss",
+    "esbuild",
+    "unrs-resolver",
+    "@next/swc-linux-x64-gnu",
+    "@next/swc-linux-x64-musl"
   ]
 }
