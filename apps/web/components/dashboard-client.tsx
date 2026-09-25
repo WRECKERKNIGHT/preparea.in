@@ -10,6 +10,7 @@ import {
   LogOut,
   Mic,
   Send,
+  Sparkles,
   Target,
   Timer,
   TrendingUp,
@@ -315,6 +316,8 @@ function AuthenticatedView({
         </div>
       ) : null}
 
+      <TrialBanner trial={me.trial} />
+
       <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Stat
           icon={Target}
@@ -349,6 +352,73 @@ function AuthenticatedView({
           <CommunityCard />
         </aside>
       </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+
+function TrialBanner({ trial }: { trial: DashboardMe["trial"] }) {
+  const [now, setNow] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    if (trial.expired) return;
+    const id = setInterval(() => setNow(Date.now()), 60 * 1000);
+    return () => clearInterval(id);
+  }, [trial.expired]);
+
+  const endMs = new Date(trial.endsAt).getTime();
+  const diff = Math.max(0, endMs - now);
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+  if (trial.expired) {
+    return (
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-plum/25 bg-plum/10 px-5 py-4">
+        <div className="flex items-center gap-3">
+          <span className="clay-icon size-10 rounded-xl bg-gradient-to-br from-plum-light to-plum text-white">
+            <Sparkles className="size-5" aria-hidden="true" />
+          </span>
+          <div>
+            <p className="font-display text-base font-bold text-ink">
+              Free trial over
+            </p>
+            <p className="text-sm text-ink-muted">
+              Your 7-day trial ended. Join a new cohort to keep momentum going.
+            </p>
+          </div>
+        </div>
+        <a href="/register" className="btn-ghost text-sm">
+          Start another week
+          <ArrowRight className="size-4" aria-hidden="true" />
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold/40 bg-gradient-to-r from-gold/15 via-raised to-plum/10 px-5 py-4">
+      <div className="flex items-center gap-3">
+        <span className="clay-icon size-10 rounded-xl bg-gradient-to-br from-gold-light to-gold text-gold-deep">
+          <Sparkles className="size-5" aria-hidden="true" />
+        </span>
+        <div>
+          <p className="font-display text-base font-bold text-ink">
+            {days > 0
+              ? `${days} day${days === 1 ? "" : "s"} of your free trial left`
+              : hours > 0
+                ? `${hours} hour${hours === 1 ? "" : "s"} of your free trial left`
+                : "Last day of your free trial"}
+          </p>
+          <p className="text-sm text-ink-muted">
+            Everything on PrepArea is free for your first 7 days. No card needed.
+          </p>
+        </div>
+      </div>
+      <a href="/features" className="btn-gold text-sm">
+        See what&rsquo;s included
+        <ArrowRight className="size-4" aria-hidden="true" />
+      </a>
     </div>
   );
 }
