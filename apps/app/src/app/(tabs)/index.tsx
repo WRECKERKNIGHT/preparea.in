@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { ScrollView, StyleSheet, View, RefreshControl, Alert } from "react-native";
-import type { DashboardMe } from "@preparea/shared";
+import { trialInfo, type DashboardMe } from "@preparea/shared";
 import { loadSession, fetchMe, postCheckin } from "@/lib/api";
 import { Btn, Card, Line, T, TSerif } from "@/components/ui";
 import { theme, spacing } from "@/constants/theme";
@@ -64,6 +64,8 @@ export default function TodayScreen() {
     >
       <TSerif style={styles.greeting}>Hello, {me.student.name.split(" ")[0]}</TSerif>
       <T style={styles.subline}>{me.student.klass} · {me.student.exam}</T>
+
+      <TrialCard trial={me.trial} />
 
       {me.announcement ? (
         <Card style={styles.announce}>
@@ -175,8 +177,36 @@ export default function TodayScreen() {
   );
 }
 
+function TrialCard({ trial }: { trial: NonNullable<DashboardMe["trial"]> }) {
+  const info = trialInfo(trial.startedAt);
+  return (
+    <Card style={trial.expired ? styles.trialExpired : styles.trial}>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        <T style={[styles.trialTitle, trial.expired && { color: theme.error }]}>
+          {trial.expired ? "Free trial over" : "7-day free trial"}
+        </T>
+        {!trial.expired ? (
+          <T style={styles.trialBadge}>
+            {info.daysRemaining} {info.daysRemaining === 1 ? "day" : "days"} left
+          </T>
+        ) : null}
+      </View>
+      <T style={styles.trialText}>
+        {trial.expired
+          ? "Your trial has ended. The public study rooms and community stay open — premium features are a paid option."
+          : `Everything on PrepArea is free for your first week. No card needed — enjoy full access.`}
+      </T>
+    </Card>
+  );
+}
+
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: theme.paper },
+  trial: { backgroundColor: "#FFF6E3", borderColor: "#F0B84A" },
+  trialExpired: { backgroundColor: "#FCEBE8", borderColor: "#E06A82" },
+  trialTitle: { fontSize: 16, fontWeight: "700", color: theme.ink },
+  trialBadge: { fontSize: 13, fontWeight: "700", color: "#B06E12" },
+  trialText: { color: theme.inkMuted, fontSize: 13, marginTop: 6 },
   content: { padding: spacing.lg, paddingBottom: spacing.xl },
   center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: theme.paper },
   greeting: { fontSize: 32, marginBottom: 2, letterSpacing: -0.3 },

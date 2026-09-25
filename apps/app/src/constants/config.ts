@@ -8,8 +8,6 @@ import { Platform } from "react-native";
 
 const PROD_BASE = "https://preparea.in";
 
-const LAN_BASE = "http://192.168.1.100:3000"; // TODO: use your LAN IP for local device testing
-
 export const API_BASE: string = Platform.OS === "web" ? "" : PROD_BASE;
 
 export const COMMUNITY = {

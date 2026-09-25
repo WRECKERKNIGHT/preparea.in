@@ -76,7 +76,7 @@ export default function Register() {
           <TSerif style={styles.title}>{stage === "form" ? "Create your account" : "Confirm your email"}</TSerif>
           <T style={styles.sub}>
             {stage === "form"
-              ? "One profile, used across the website and the app."
+              ? "One profile, used across the website and the app. First 7 days are a free trial."
               : `We emailed a 6-digit code to ${email}.`}
           </T>
 
