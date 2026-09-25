@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { PageHeader } from "@/components/page-header";
+import { Reveal } from "@/components/fx/reveal";
 
 export const metadata: Metadata = {
   title: "Privacy",
@@ -35,28 +37,29 @@ const sections = [
 export default function PrivacyPage() {
   return (
     <>
-      <section className="border-b border-edge bg-paper">
-        <div className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-            Privacy
-          </p>
-          <h1 className="mt-3 font-serif text-4xl font-medium text-ink">
-            Your information, kept minimal
-          </h1>
-          <p className="mt-4 text-ink-muted">
-            We collect the least we need and protect what we hold.
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        kicker="Privacy"
+        title={
+          <>
+            Your information, kept{" "}
+            <span className="text-gradient-gold">minimal</span>
+          </>
+        }
+        intro="We collect the least we need and protect what we hold."
+      />
 
-      <section className="bg-raised">
-        <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
-          <div className="space-y-px overflow-hidden rounded-[6px] border border-edge bg-edge">
-            {sections.map(({ title, body }) => (
-              <div key={title} className="bg-raised p-6">
-                <h2 className="font-serif text-lg font-medium text-ink">{title}</h2>
-                <p className="mt-2 text-sm text-ink-muted">{body}</p>
-              </div>
+      <section className="bg-raised py-16">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6">
+          <div className="grid grid-cols-1 gap-4">
+            {sections.map(({ title, body }, i) => (
+              <Reveal key={title} delay={(i % 2) * 0.07}>
+                <div className="clay-card-deep p-7">
+                  <h2 className="font-display text-xl font-black text-ink">
+                    {title}
+                  </h2>
+                  <p className="mt-2 text-ink-muted">{body}</p>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>

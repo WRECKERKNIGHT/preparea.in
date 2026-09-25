@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHeader } from "@/components/page-header";
+import { Reveal } from "@/components/fx/reveal";
 
 export const metadata: Metadata = {
   title: "FAQ",
@@ -48,35 +50,48 @@ const faqs = [
 export default function FaqPage() {
   return (
     <>
-      <section className="border-b border-edge bg-paper">
-        <div className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-            FAQ
-          </p>
-          <h1 className="mt-3 font-serif text-4xl font-medium text-ink">
-            Questions, answered
-          </h1>
-        </div>
-      </section>
+      <PageHeader
+        kicker="FAQ"
+        title={
+          <>
+            Questions, <span className="text-gradient-gold">answered</span>
+          </>
+        }
+      />
 
-      <section className="bg-raised">
-        <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
-          <div className="space-y-px overflow-hidden rounded-[6px] border border-edge bg-edge">
-            {faqs.map(({ q, a }) => (
-              <div key={q} className="bg-raised p-6">
-                <h2 className="font-serif text-lg font-medium text-ink">{q}</h2>
-                <p className="mt-2 text-sm text-ink-muted">{a}</p>
-              </div>
+      <section className="bg-raised py-16">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6">
+          <div className="grid grid-cols-1 gap-4">
+            {faqs.map(({ q, a }, i) => (
+              <Reveal key={q} delay={(i % 3) * 0.05}>
+                <details className="clay-card-deep group overflow-hidden p-0">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-7 py-5 font-display text-lg font-bold text-ink [&::-webkit-details-marker]:hidden">
+                    {q}
+                    <span
+                      className="clay-icon size-8 shrink-0 rounded-full bg-gradient-to-br from-gold-light to-gold text-gold-deep transition-transform duration-300 group-open:rotate-45"
+                      aria-hidden="true"
+                    >
+                      +
+                    </span>
+                  </summary>
+                  <p className="px-7 pb-6 text-ink-muted">{a}</p>
+                </details>
+              </Reveal>
             ))}
           </div>
-          <div className="mt-10 text-center">
-            <p className="text-sm text-ink-muted">
-              Still curious?{" "}
-              <Link href="/register" className="font-semibold text-accent hover:text-accent-hover">
-                Join and ask us directly
-              </Link>
-            </p>
-          </div>
+          <Reveal delay={0.15}>
+            <div className="mt-10 text-center">
+              <p className="text-ink-muted">
+                Still curious?{" "}
+                <Link
+                  href="/register"
+                  className="font-bold text-accent underline decoration-gold underline-offset-4 hover:text-accent-hover"
+                >
+                  Join and ask us directly
+                </Link>
+              </p>
+            </div>
+          </Reveal>
         </div>
       </section>
     </>
