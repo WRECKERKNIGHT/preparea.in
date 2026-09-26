@@ -32,11 +32,23 @@ export const metadata: Metadata = {
   description:
     "A study community for JEE, NEET, CUET and board exam aspirants. Virtual study rooms, daily check-ins, consistency challenges and mentorship.",
   metadataBase: new URL("https://preparea.in"),
+  icons: {
+    icon: "/brand-logo.jpg",
+    apple: "/brand-logo.jpg",
+  },
   openGraph: {
     title: "PrepArea — Study together. Stay accountable.",
     description:
       "Virtual study rooms, daily check-ins, consistency challenges and practical guidance from experienced aspirants.",
     type: "website",
+    images: ["/brand-og.jpg"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PrepArea — Study together. Stay accountable.",
+    description:
+      "Virtual study rooms, daily check-ins, consistency challenges and practical guidance from experienced aspirants.",
+    images: ["/brand-og.jpg"],
   },
 };
 

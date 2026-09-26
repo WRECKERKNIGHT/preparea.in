@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import Image from "next/image";
 
 export function Logo({ light = false }: { light?: boolean }) {
   return (
@@ -8,11 +8,15 @@ export function Logo({ light = false }: { light?: boolean }) {
       className="group flex items-center gap-2.5"
       aria-label="PrepArea home"
     >
-      <span
-        className="clay-icon relative size-9 rounded-2xl bg-gradient-to-br from-accent to-accent-deep text-gold-light shadow-clay"
-        aria-hidden="true"
-      >
-        <Sparkles className="size-5 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
+      <span className="clay-icon relative size-9 overflow-hidden rounded-full shadow-clay" aria-hidden="true">
+        <Image
+          src="/brand-logo.jpg"
+          alt=""
+          fill
+          sizes="36px"
+          className="object-cover transition-transform duration-300 group-hover:scale-110"
+          priority
+        />
       </span>
       <span
         className={`font-display text-xl font-black tracking-tight ${
