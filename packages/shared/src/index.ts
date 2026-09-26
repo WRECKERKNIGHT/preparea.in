@@ -176,8 +176,6 @@ export function trialInfo(createdAt?: string): TrialInfo {
   const endsAt = new Date(start);
   endsAt.setDate(endsAt.getDate() + TRIAL_DAYS);
   const endTime = endsAt.getTime();
-  const exposedEnd = new Date();
-  exposedEnd.setHours(23, 59, 59, 999);
   const daysRemaining = Math.max(
     0,
     Math.ceil((endTime - Date.now()) / (1000 * 60 * 60 * 24))
