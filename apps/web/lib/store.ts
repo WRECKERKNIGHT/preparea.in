@@ -18,6 +18,7 @@ import type {
 import { normalizeEmail, isEmail, otpCode, minMax, trialInfo } from "@preparea/shared";
 import type { CheckinStatus } from "@preparea/shared";
 import { getSheetsAdmin } from "@/lib/sheets";
+import { openSqliteStore } from "@/lib/sqlite";
 
 function todayKey(): string {
   return new Date().toISOString().slice(0, 10);
@@ -529,8 +530,10 @@ const mock = new MockStore();
 
 export function getStore(): Store {
   const admin = getSheetsAdmin();
-  if (!admin) return mock;
-  return new SheetsStore(admin);
+  if (admin) return new SheetsStore(admin);
+  const sqlite = openSqliteStore();
+  if (sqlite) return sqlite;
+  return mock;
 }
 
 // ---------------------------------------------------------------------------

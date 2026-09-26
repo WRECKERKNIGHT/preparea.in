@@ -6,6 +6,9 @@ node_modules/
 out/
 *.tsbuildinfo
 
+# sqlite db
+apps/web/.data/
+
 # expo
 .expo/
 dist/
@@ -15,6 +18,10 @@ web-build/
 .env
 .env.local
 .env*.local
+
+# root lockfile: windows-generated npm lockfiles pin win32-only native
+# binaries and break Vercel Linux builds. web lockfile is committed instead.
+package-lock.json
 
 # logs & os
 *.log
