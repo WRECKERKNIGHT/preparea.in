@@ -15,6 +15,7 @@ if (typeof window !== "undefined") {
 
 const NAV = [
   { href: "/#how-it-works", label: "How it works" },
+  { href: "/tour", label: "Tour" },
   { href: "/features", label: "Features" },
   { href: "/community", label: "Community" },
   { href: "/mentors", label: "Mentors" },

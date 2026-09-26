@@ -5,6 +5,7 @@ import {
   ArrowRight,
   CalendarCheck,
   CheckCircle2,
+  Compass,
   Flame,
   LoaderCircle,
   LogOut,
@@ -307,6 +308,17 @@ function AuthenticatedView({
           <LogOut className="size-4" aria-hidden="true" />
           Log out
         </button>
+      </div>
+
+      <div className="mt-4">
+        <a
+          href="/tour"
+          className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-4 py-2 text-xs font-bold text-gold-deep transition-colors hover:bg-gold/20"
+        >
+          <Compass className="size-4" aria-hidden="true" />
+          First time? Take the 5-minute tour
+          <ArrowRight className="size-4" aria-hidden="true" />
+        </a>
       </div>
 
       {me.announcement ? (

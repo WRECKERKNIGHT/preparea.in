@@ -1,4 +1,4 @@
-import { CheckCircle2, ArrowRight, Send, MessagesSquare, Sparkles } from "lucide-react";
+import { CheckCircle2, ArrowRight, Send, MessagesSquare, Sparkles, Compass } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getSettings } from "@/lib/settings";
@@ -78,6 +78,23 @@ export default async function SuccessPage({
               <Sparkles className="size-3.5" aria-hidden="true" />
               7 days of free trial on your account — no card needed.
             </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <span className="clay-btn clay-btn-emerald px-6 py-3 text-sm">
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-2"
+                >
+                  Open your dashboard
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Link>
+              </span>
+              <span className="clay-btn clay-btn-night px-6 py-3 text-sm">
+                <Link href="/tour" className="inline-flex items-center gap-2">
+                  <Compass className="size-4" aria-hidden="true" />
+                  Take the 5-minute tour
+                </Link>
+              </span>
+            </div>
           </div>
         </Reveal>
 
