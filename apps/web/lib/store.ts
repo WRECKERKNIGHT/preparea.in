@@ -15,27 +15,11 @@ import type {
   PublicSettings,
   ChallengeParticipant,
 } from "@preparea/shared";
-import { normalizeEmail, isEmail, otpCode, minMax, trialInfo } from "@preparea/shared";
-import type { CheckinStatus } from "@preparea/shared";
+import { normalizeEmail, isEmail, otpCode, minMax } from "@preparea/shared";
 import { getSheetsAdmin } from "@/lib/sheets";
 import { openSqliteStore } from "@/lib/sqlite";
-
-function todayKey(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function dayKey(offset: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + offset);
-  return d.toISOString().slice(0, 10);
-}
-
-function localDateKey(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
+import { buildDashboard } from "@/lib/aggregate";
+import { dayKey, todayKey } from "@/lib/dates";
 
 function hash(s: string): string {
   return createHash("sha256").update(s).digest("hex");
@@ -208,9 +192,7 @@ class MockStore {
       [1, 240, "partial"],
     ] as const;
     for (const [offset, minutes, status] of seed) {
-      const d = new Date();
-      d.setDate(d.getDate() - offset);
-      const k = localDateKey(d);
+      const k = dayKey(-offset);
       this.logs.push({
         id: nanoid(8),
         studentId: demoId,
@@ -389,93 +371,20 @@ class MockStore {
     const student = this.getStudent(studentId);
     if (!student) throw new Error("Student not found.");
 
-    const logs = this.logs.filter((l) => l.studentId === studentId);
-    const checkinsList = this.checkins.filter(
-      (c) => c.studentId === studentId
-    );
-
-    const today = todayKey();
-    const todayMinutes = logs
-      .filter((l) => l.date === today)
-      .reduce((sum, l) => sum + l.minutes, 0);
-
-    const weekBuckets = [] as DashboardMe["weekBuckets"];
-    let weekMinutes = 0;
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const k = localDateKey(d);
-      const minutes = logs
-        .filter((l) => l.date === k)
-        .reduce((sum, l) => sum + l.minutes, 0);
-      weekMinutes += minutes;
-      weekBuckets.push({
-        label: d.toLocaleDateString("en-IN", { weekday: "short" }),
-        minutes,
-      });
-    }
-
-    const doneDates = new Set<string>();
-    for (const c of checkinsList)
-      if (c.status !== "miss") doneDates.add(c.date);
-    for (const l of logs) if (l.minutes > 0) doneDates.add(l.date);
-
-    let streak = 0;
-    for (let i = 0; i < 90; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      if (doneDates.has(localDateKey(d))) streak++;
-      else break;
-    }
-
-    const lastCheckin = checkinsList.length
-      ? [...checkinsList].sort((a, b) => b.date.localeCompare(a.date))[0]
-      : null;
-
     const challenge = this.challenge;
-    let challengeProgress: DashboardMe["challengeProgress"] = {
-      joined: false,
-      dayStatuses: [],
-    };
-    if (challenge) {
-      const joined = this.participants.some(
-        (p) => p.challengeId === challenge.id && p.studentId === studentId
-      );
-      const start = new Date(challenge.startDate + "T00:00:00");
-      const dayStatuses: (CheckinStatus | null)[] = [];
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(start);
-        d.setDate(d.getDate() + i);
-        const k = localDateKey(d);
-        if (k > today) {
-          dayStatuses.push(null);
-          continue;
-        }
-        const c = checkinsList.find((x) => x.date === k);
-        dayStatuses.push(c?.status ?? "miss");
-      }
-      challengeProgress = { joined, dayStatuses };
-    }
 
-    const lastCheckinToday =
-      lastCheckin?.date === today ? lastCheckin : null;
-
-    return {
+    return buildDashboard({
       student,
-      trial: trialInfo(student.createdAt),
-      todayMinutes,
-      todayTargetMin:
-        lastCheckinToday?.targetMin ?? student.dailyTargetMin,
-      weekMinutes,
-      weekBuckets,
-      streakDays: streak,
-      lastCheckin: lastCheckinToday,
-      rooms: this.rooms.filter((r) => r.active),
-      activeChallenge: challenge,
-      challengeProgress,
+      logs: this.logs.filter((l) => l.studentId === studentId),
+      checkins: this.checkins.filter((c) => c.studentId === studentId),
+      rooms: this.rooms,
+      challenge,
+      joined: this.participants.some(
+        (p) => p.challengeId === challenge.id && p.studentId === studentId
+      ),
       mentorSessions: this.mentors,
       announcement: this.settings.announcement,
-    };
+    });
   }
 }
 
@@ -842,93 +751,37 @@ class SheetsStore implements Store {
 
     const logs = (await this.tab("logs")).filter((l) => l.studentId === studentId);
     const checkins = (await this.tab("checkins")).filter((c) => c.studentId === studentId);
-    const today = todayKey();
-
-    const todayMinutes = logs
-      .filter((l) => l.date === today)
-      .reduce((sum, l) => sum + Number(l.minutes || 0), 0);
-
-    const weekBuckets: DashboardMe["weekBuckets"] = [];
-    let weekMinutes = 0;
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const k = localDateKey(d);
-      const minutes = logs
-        .filter((l) => l.date === k)
-        .reduce((sum, l) => sum + Number(l.minutes || 0), 0);
-      weekMinutes += minutes;
-      weekBuckets.push({
-        label: d.toLocaleDateString("en-IN", { weekday: "short" }),
-        minutes,
-      });
-    }
-
-    const done = new Set<string>();
-    for (const c of checkins) if (c.status !== "miss") done.add(c.date);
-    for (const l of logs) if (Number(l.minutes) > 0) done.add(l.date);
-    let streak = 0;
-    for (let i = 0; i < 90; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      if (done.has(localDateKey(d))) streak++;
-      else break;
-    }
-
-    const lastCheckinRow = [...checkins].sort((a, b) => b.date.localeCompare(a.date))[0];
-    const lastCheckin = lastCheckinRow
-      ? {
-          id: lastCheckinRow.id,
-          studentId,
-          date: lastCheckinRow.date,
-          targetMin: Number(lastCheckinRow.targetMin) || 300,
-          completedMin: Number(lastCheckinRow.completedMin) || 0,
-          status: lastCheckinRow.status as Checkin["status"],
-          note: lastCheckinRow.note || undefined,
-        }
-      : null;
-
     const challenge = await this.getActiveChallenge();
-    let challengeProgress: DashboardMe["challengeProgress"] = {
-      joined: false,
-      dayStatuses: [],
-    };
-    if (challenge) {
-      const participants = await this.tab("participants");
-      const joined = participants.some(
-        (p) => p.challengeId === challenge.id && p.studentId === studentId
-      );
-      const start = new Date(challenge.startDate + "T00:00:00");
-      const dayStatuses: (CheckinStatus | null)[] = [];
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(start);
-        d.setDate(d.getDate() + i);
-        const k = localDateKey(d);
-        if (k > today) {
-          dayStatuses.push(null);
-          continue;
-        }
-        const c = checkins.find((x) => x.date === k);
-        dayStatuses.push(c ? (c.status as CheckinStatus) : "miss");
-      }
-      challengeProgress = { joined, dayStatuses };
-    }
 
-    return {
+    return buildDashboard({
       student,
-      trial: trialInfo(student.createdAt),
-      todayMinutes,
-      todayTargetMin:
-        lastCheckin?.date === today ? lastCheckin.targetMin : student.dailyTargetMin,
-      weekMinutes,
-      weekBuckets,
-      streakDays: streak,
-      lastCheckin: lastCheckin?.date === today ? lastCheckin : null,
-      rooms: (await this.getRooms()).filter((r) => r.active),
-      activeChallenge: challenge,
-      challengeProgress,
+      logs: logs.map((l) => ({
+        id: l.id,
+        studentId: l.studentId,
+        date: l.date,
+        minutes: Number(l.minutes) || 0,
+        roomId: l.roomId || undefined,
+        note: l.note || undefined,
+        source: l.source === "timer" ? "timer" : "manual",
+      })),
+      checkins: checkins.map((c) => ({
+        id: c.id,
+        studentId: c.studentId,
+        date: c.date,
+        targetMin: Number(c.targetMin) || 300,
+        completedMin: Number(c.completedMin) || 0,
+        status: (c.status as Checkin["status"]) ?? "miss",
+        note: c.note || undefined,
+      })),
+      rooms: await this.getRooms(),
+      challenge,
+      joined: challenge
+        ? (await this.tab("participants")).some(
+            (p) => p.challengeId === challenge.id && p.studentId === studentId
+          )
+        : false,
       mentorSessions: await this.getMentorSessions(),
       announcement: (await this.getSettings()).announcement,
-    };
+    });
   }
 }

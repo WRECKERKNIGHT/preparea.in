@@ -20,25 +20,10 @@ import type {
   ChallengeParticipant,
   CheckinStatus,
 } from "@preparea/shared";
-import { normalizeEmail, isEmail, otpCode, minMax, trialInfo } from "@preparea/shared";
+import { normalizeEmail, isEmail, otpCode, minMax } from "@preparea/shared";
 import type { Store } from "@/lib/store";
-
-function todayKey(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function dayKey(offset: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + offset);
-  return d.toISOString().slice(0, 10);
-}
-
-function localDateKey(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
+import { buildDashboard } from "@/lib/aggregate";
+import { dayKey, todayKey } from "@/lib/dates";
 
 function hash(s: string): string {
   return createHash("sha256").update(s).digest("hex");
@@ -302,9 +287,7 @@ export class SqliteStore implements Store {
       [1, 240, "partial"],
     ] as const;
     for (const [offset, minutes, status] of seed) {
-      const d = new Date();
-      d.setDate(d.getDate() - offset);
-      const k = localDateKey(d);
+      const k = dayKey(-offset);
       const id = nanoid(8);
       insert("logs", ["id", "studentId", "date", "minutes", "roomId", "note", "source"], {
         id,
@@ -616,105 +599,46 @@ export class SqliteStore implements Store {
     const student = await this.getStudent(studentId);
     if (!student) throw new Error("Student not found.");
 
-    const logs = this.db
+    const logRows = this.db
       .prepare("SELECT * FROM logs WHERE studentId = ?")
       .all(studentId) as unknown as Record<string, unknown>[];
-    const checkinsList = this.db
+    const checkinRows = this.db
       .prepare("SELECT * FROM checkins WHERE studentId = ?")
       .all(studentId) as unknown as Record<string, unknown>[];
 
-    const today = todayKey();
-    const todayMinutes = logs
-      .filter((l) => l.date === today)
-      .reduce((sum, l) => sum + Number(l.minutes || 0), 0);
-
-    const weekBuckets: DashboardMe["weekBuckets"] = [];
-    let weekMinutes = 0;
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const k = localDateKey(d);
-      const minutes = logs
-        .filter((l) => l.date === k)
-        .reduce((sum, l) => sum + Number(l.minutes || 0), 0);
-      weekMinutes += minutes;
-      weekBuckets.push({
-        label: d.toLocaleDateString("en-IN", { weekday: "short" }),
-        minutes,
-      });
-    }
-
-    const doneDates = new Set<string>();
-    for (const c of checkinsList)
-      if (String(c.status) !== "miss") doneDates.add(String(c.date));
-    for (const l of logs) if (Number(l.minutes) > 0) doneDates.add(String(l.date));
-
-    let streak = 0;
-    for (let i = 0; i < 90; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      if (doneDates.has(localDateKey(d))) streak++;
-      else break;
-    }
-
-    const lastCheckin = checkinsList.length
-      ? [...checkinsList].sort((a, b) => String(b.date).localeCompare(String(a.date)))[0]
-      : null;
-
     const challenge = await this.getActiveChallenge();
-    let challengeProgress: DashboardMe["challengeProgress"] = {
-      joined: false,
-      dayStatuses: [],
-    };
-    if (challenge) {
-      const partner = this.db
-        .prepare("SELECT * FROM participants WHERE challengeId = ? AND studentId = ?")
-        .get(challenge.id, studentId);
-      const joined = Boolean(partner);
-      const start = new Date(challenge.startDate + "T00:00:00");
-      const dayStatuses: (CheckinStatus | null)[] = [];
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(start);
-        d.setDate(d.getDate() + i);
-        const k = localDateKey(d);
-        if (k > today) {
-          dayStatuses.push(null);
-          continue;
-        }
-        const c = checkinsList.find((x) => String(x.date) === k);
-        dayStatuses.push(c ? (String(c.status) as CheckinStatus) : "miss");
-      }
-      challengeProgress = { joined, dayStatuses };
-    }
+    const partner = challenge
+      ? (this.db
+          .prepare("SELECT 1 AS x FROM participants WHERE challengeId = ? AND studentId = ?")
+          .get(challenge.id, studentId) as unknown as { x: number } | undefined)
+      : undefined;
 
-    const lastCheckinToday = lastCheckin?.date === today ? lastCheckin : null;
-
-    return {
+    return buildDashboard({
       student,
-      trial: trialInfo(student.createdAt),
-      todayMinutes,
-      todayTargetMin:
-        lastCheckin?.date === today ? Number(lastCheckin.targetMin) : student.dailyTargetMin,
-      weekMinutes,
-      weekBuckets,
-      streakDays: streak,
-      lastCheckin: lastCheckinToday
-        ? ({
-            id: String(lastCheckinToday.id),
-            studentId,
-            date: String(lastCheckinToday.date),
-            targetMin: Number(lastCheckinToday.targetMin),
-            completedMin: Number(lastCheckinToday.completedMin),
-            status: String(lastCheckinToday.status) as Checkin["status"],
-            note: lastCheckinToday.note ? String(lastCheckinToday.note) : undefined,
-          } satisfies Checkin)
-        : null,
+      logs: logRows.map((l) => ({
+        id: String(l.id),
+        studentId,
+        date: String(l.date),
+        minutes: Number(l.minutes) || 0,
+        roomId: l.roomId ? String(l.roomId) : undefined,
+        note: l.note ? String(l.note) : undefined,
+        source: l.source === "timer" ? "timer" : "manual",
+      })),
+      checkins: checkinRows.map((c) => ({
+        id: String(c.id),
+        studentId,
+        date: String(c.date),
+        targetMin: Number(c.targetMin) || 300,
+        completedMin: Number(c.completedMin) || 0,
+        status: String(c.status) as Checkin["status"],
+        note: c.note ? String(c.note) : undefined,
+      })),
       rooms: await this.getRooms(),
-      activeChallenge: challenge,
-      challengeProgress,
+      challenge,
+      joined: Boolean(partner),
       mentorSessions: await this.getMentorSessions(),
       announcement: (await this.getSettings()).announcement,
-    };
+    });
   }
 }
 
