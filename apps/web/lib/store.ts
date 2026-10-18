@@ -15,11 +15,12 @@ import type {
   PublicSettings,
   ChallengeParticipant,
 } from "@preparea/shared";
-import { normalizeEmail, isEmail, otpCode, minMax } from "@preparea/shared";
+import { normalizeEmail, isEmail, minMax } from "@preparea/shared";
 import { getSheetsAdmin } from "@/lib/sheets";
-import { openSqliteStore } from "@/lib/sqlite";
+import { openSqlStore } from "@/lib/sql-store";
 import { buildDashboard } from "@/lib/aggregate";
 import { dayKey, todayKey } from "@/lib/dates";
+import { verifyPassword } from "./password";
 
 function hash(s: string): string {
   return createHash("sha256").update(s).digest("hex");
@@ -223,23 +224,23 @@ class MockStore {
     return true;
   }
 
-  findStudentByEmail(email: string) {
+  async findStudentByEmail(email: string) {
     const norm = normalizeEmail(email);
     return this.students.find((s) => s.email === norm) ?? null;
   }
 
-  getStudent(id: string) {
+  async getStudent(id: string) {
     return this.students.find((s) => s.id === id) ?? null;
   }
 
-  registerStudent(input: RegisterInput) {
+  async registerStudent(input: RegisterInput) {
     if (!input.name.trim()) throw new Error("Name is required.");
     if (!isEmail(input.email)) throw new Error("Valid email is required.");
     if (!input.klass || !input.exam)
       throw new Error("Class and exam are required.");
     if (!minMax(input.dailyTargetMin, 15, 720))
       throw new Error("Daily target must be 15–720 minutes.");
-    if (this.findStudentByEmail(input.email))
+    if (await this.findStudentByEmail(input.email))
       throw new Error("This email is already registered.");
 
     const student: Student = {
@@ -248,6 +249,7 @@ class MockStore {
       klass: input.klass,
       exam: input.exam,
       email: normalizeEmail(input.email),
+      passwordHash: input.passwordHash,
       tgUsername: input.tgUsername?.trim() || undefined,
       discordUsername: input.discordUsername?.trim() || undefined,
       dailyTargetMin: input.dailyTargetMin,
@@ -259,53 +261,103 @@ class MockStore {
     return student;
   }
 
-  updateStudent(id: string, patch: Partial<Student>) {
+  async updateStudent(id: string, patch: Partial<Student>) {
     const s = this.getStudent(id);
     if (!s) return null;
     Object.assign(s, patch);
     return s;
   }
 
-  requestOtp(email: string, purpose: string) {
-    const norm = normalizeEmail(email);
-    const code = otpCode();
-    this.otps.set(norm, {
-      code,
-      purpose,
-      expiresAt: Date.now() + 10 * 60 * 1000,
-    });
-    return { code };
+  async login(email: string, password: string): Promise<Student | null> {
+    const student = await this.findStudentByEmail(email);
+    if (!student || !student.passwordHash) return null;
+    const isValid = await verifyPassword(password, student.passwordHash);
+    return isValid ? student : null;
   }
 
-  verifyOtp(email: string, code: string) {
-    const rec = this.otps.get(normalizeEmail(email));
-    if (!rec || rec.code !== code.trim() || rec.expiresAt < Date.now())
-      return null;
-    this.otps.delete(normalizeEmail(email));
-    return this.findStudentByEmail(email);
-  }
-
-  verifyDemo() {
+  async verifyDemo() {
     return this.students[0];
   }
 
-  getRooms() {
+  async getRooms() {
     return this.rooms;
   }
 
-  getMentorSessions() {
+  async getMentorSessions() {
     return this.mentors;
   }
 
-  getActiveChallenge() {
+  async getActiveChallenge() {
     return this.challenge;
   }
 
-  getSettings() {
+  async getChallenge(id: string) {
+    return this.challenge.id === id ? this.challenge : null;
+  }
+
+  async listChallenges() {
+    return [this.challenge];
+  }
+
+  async isParticipant(challengeId: string, studentId: string) {
+    return this.participants.some(
+      (p) => p.challengeId === challengeId && p.studentId === studentId
+    );
+  }
+
+  async countParticipants(challengeId: string) {
+    return this.participants.filter((p) => p.challengeId === challengeId).length;
+  }
+
+  async listStudyLogs(studentId: string, limit = 60) {
+    return this.logs
+      .filter((l) => l.studentId === studentId)
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, limit);
+  }
+
+  async listMentorSessions({ includePast = false } = {}) {
+    if (includePast) return this.mentors;
+    return this.mentors.filter((m) => m.date >= todayKey());
+  }
+
+  async getStudyTotals(studentId: string, sinceKey: string) {
+    const mine = this.logs.filter((l) => l.studentId === studentId);
+    return {
+      windowMinutes: mine
+        .filter((l) => l.date >= sinceKey)
+        .reduce((sum, l) => sum + l.minutes, 0),
+      totalMinutes: mine.reduce((sum, l) => sum + l.minutes, 0),
+      totalSessions: mine.length,
+    };
+  }
+
+  async getLeaderboardRows(sinceKey: string) {
+    return this.students.map((s) => ({
+      studentId: s.id,
+      name: s.name,
+      klass: s.klass,
+      exam: s.exam,
+      minutes: this.logs
+        .filter((l) => l.studentId === s.id && l.date >= sinceKey)
+        .reduce((sum, l) => sum + l.minutes, 0),
+      checkinsHit: this.checkins.filter(
+        (c) => c.studentId === s.id && c.date >= sinceKey && c.status !== "miss"
+      ).length,
+    }));
+  }
+
+  async revokeSessions() {}
+
+  async getTokenVersion() {
+    return 0;
+  }
+
+  async getSettings() {
     return this.settings;
   }
 
-  logStudy(studentId: string, input: StudyLogInput) {
+  async logStudy(studentId: string, input: StudyLogInput) {
     const log: StudyLog = {
       id: nanoid(10),
       studentId,
@@ -319,7 +371,7 @@ class MockStore {
     return log;
   }
 
-  upsertCheckin(studentId: string, input: CheckinInput) {
+  async upsertCheckin(studentId: string, input: CheckinInput) {
     const date = todayKey();
     const existing = this.checkins.find(
       (c) => c.studentId === studentId && c.date === date
@@ -345,7 +397,7 @@ class MockStore {
     return checkin;
   }
 
-  joinChallenge(studentId: string, challengeId: string) {
+  async joinChallenge(studentId: string, challengeId: string) {
     const exists = this.participants.some(
       (p) =>
         p.challengeId === challengeId && p.studentId === studentId
@@ -359,7 +411,7 @@ class MockStore {
     }
   }
 
-  submitFeedback(studentId: string, input: FeedbackInput) {
+  async submitFeedback(studentId: string, input: FeedbackInput) {
     return {
       studentId,
       ...input,
@@ -367,8 +419,8 @@ class MockStore {
     };
   }
 
-  getDashboard(studentId: string): DashboardMe {
-    const student = this.getStudent(studentId);
+  async getDashboard(studentId: string): Promise<DashboardMe> {
+    const student = await this.getStudent(studentId);
     if (!student) throw new Error("Student not found.");
 
     const challenge = this.challenge;
@@ -392,56 +444,79 @@ class MockStore {
 // Store façade
 // ---------------------------------------------------------------------------
 
+export interface StudyTotals {
+  windowMinutes: number;
+  totalMinutes: number;
+  totalSessions: number;
+}
+
+export interface LeaderboardRow {
+  studentId: string;
+  name: string;
+  klass: string;
+  exam: string;
+  minutes: number;
+  checkinsHit: number;
+}
+
+/**
+ * Every method is async, including the in-memory mock's. The old
+ * `T | Promise<T>` return types forced `await (await x).y` gymnastics at every
+ * call site and made typos legal; one uniform shape is easier to hold.
+ */
 export interface Store {
-  findStudentByEmail(
-    email: string
-  ): Student | null | Promise<Student | null>;
-  getStudent(id: string): Student | null | Promise<Student | null>;
-  registerStudent(
-    input: RegisterInput
-  ): Student | Promise<Student>;
-  updateStudent(
-    id: string,
-    patch: Partial<Student>
-  ): Student | null | Promise<Student | null>;
-  requestOtp(
-    email: string,
-    purpose: string
-  ): { code: string } | Promise<{ code: string }>;
-  verifyOtp(
-    email: string,
-    code: string
-  ): Student | null | Promise<Student | null>;
-  getRooms(): Room[] | Promise<Room[]>;
-  getMentorSessions():
-    | MentorSession[]
-    | Promise<MentorSession[]>;
-  getActiveChallenge(): Challenge | null | Promise<Challenge | null>;
-  getSettings(): PublicSettings | Promise<PublicSettings>;
-  logStudy(
-    studentId: string,
-    input: StudyLogInput
-  ): StudyLog | Promise<StudyLog>;
-  upsertCheckin(
-    studentId: string,
-    input: CheckinInput
-  ): Checkin | Promise<Checkin>;
-  joinChallenge(studentId: string, challengeId: string): void | Promise<void>;
-  submitFeedback(
-    studentId: string,
-    input: FeedbackInput
-  ): unknown | Promise<unknown>;
-  getDashboard(studentId: string): DashboardMe | Promise<DashboardMe>;
   isMock(): boolean;
+
+  findStudentByEmail(email: string): Promise<Student | null>;
+  getStudent(id: string): Promise<Student | null>;
+  registerStudent(input: RegisterInput): Promise<Student>;
+  updateStudent(id: string, patch: Partial<Student>): Promise<Student | null>;
+  revokeSessions(studentId: string): Promise<void>;
+  getTokenVersion(studentId: string): Promise<number>;
+
+  login(email: string, password: string): Promise<Student | null>;
+
+  getRooms(): Promise<Room[]>;
+  getMentorSessions(): Promise<MentorSession[]>;
+  listMentorSessions(opts?: { includePast?: boolean }): Promise<MentorSession[]>;
+
+  getActiveChallenge(): Promise<Challenge | null>;
+  getChallenge(id: string): Promise<Challenge | null>;
+  listChallenges(): Promise<Challenge[]>;
+  isParticipant(challengeId: string, studentId: string): Promise<boolean>;
+  countParticipants(challengeId: string): Promise<number>;
+
+  getSettings(): Promise<PublicSettings>;
+  getDashboard(studentId: string): Promise<DashboardMe>;
+
+  logStudy(studentId: string, input: StudyLogInput): Promise<StudyLog>;
+  listStudyLogs(studentId: string, limit?: number): Promise<StudyLog[]>;
+  upsertCheckin(studentId: string, input: CheckinInput): Promise<Checkin>;
+  getStudyTotals(studentId: string, sinceKey: string): Promise<StudyTotals>;
+  getLeaderboardRows(sinceKey: string): Promise<LeaderboardRow[]>;
+
+  joinChallenge(studentId: string, challengeId: string): Promise<void>;
+  submitFeedback(studentId: string, input: FeedbackInput): Promise<unknown>;
 }
 
 const mock = new MockStore();
 
-export function getStore(): Store {
+/**
+ * Resolves the persistence backend.
+ *
+ * Preference order:
+ *   1. Google Sheets  — only when GOOGLE_SPREADSHEET_ID is set (legacy opt-in)
+ *   2. libSQL/SQLite   — hosted Turso in production, local file in dev
+ *   3. In-memory mock  — last-resort so the app still renders on a misconfigured deploy
+ *
+ * Async because opening the SQL store runs migrations and the seed guard.
+ * Results are memoised in `lib/store-instance.ts`.
+ */
+export async function getStore(): Promise<Store> {
   const admin = getSheetsAdmin();
   if (admin) return new SheetsStore(admin);
-  const sqlite = openSqliteStore();
-  if (sqlite) return sqlite;
+  const sql = await openSqlStore();
+  if (sql) return sql;
   return mock;
 }
 
@@ -452,16 +527,15 @@ export function getStore(): Store {
 class SheetsStore implements Store {
   private admin: import("@/lib/sheets").SheetsAdmin;
   private ship = {
-    students: ["id", "name", "klass", "exam", "email", "tgUsername", "discordUsername", "dailyTargetMin", "mainChallenge", "status", "createdAt"],
+    students: ["id", "name", "klass", "exam", "email", "passwordHash", "tgUsername", "discordUsername", "dailyTargetMin", "mainChallenge", "status", "createdAt"],
     logs: ["id", "studentId", "date", "minutes", "roomId", "note", "source"],
     checkins: ["id", "studentId", "date", "targetMin", "completedMin", "status", "note"],
     rooms: ["id", "name", "day", "time", "durationMin", "zoomLink", "examFocus", "active"],
     mentors: ["id", "mentorName", "topic", "date", "time", "zoomLink", "notes", "recordingLink"],
     challenges: ["id", "name", "type", "startDate", "endDate", "rules", "active"],
     participants: ["challengeId", "studentId", "joinedAt"],
-    feedback: ["studentId", "helpsConsistency", "sessionsAttended", "liked", "improve", "joinAgain", "wouldPay", "features", "submittedAt"],
+    feedback: ["studentId", "helpsConsistency", "sessionsAttended", "liked", "improve", "joinAgain", "wouldPay", "wouldPay", "features", "submittedAt"],
     settings: ["key", "value"],
-    otps: ["email", "codeHash", "purpose", "expiresAt"],
   } as const;
 
   private dev: boolean = process.env.NODE_ENV !== "production";
@@ -509,6 +583,7 @@ class SheetsStore implements Store {
       klass: r.klass,
       exam: r.exam,
       email: r.email,
+      passwordHash: r.passwordHash || undefined,
       tgUsername: r.tgUsername || undefined,
       discordUsername: r.discordUsername || undefined,
       dailyTargetMin: Number(r.dailyTargetMin) || 300,
@@ -553,6 +628,7 @@ class SheetsStore implements Store {
       klass: input.klass,
       exam: input.exam,
       email: normalizeEmail(input.email),
+      passwordHash: input.passwordHash ?? "",
       tgUsername: input.tgUsername?.trim() ?? "",
       discordUsername: input.discordUsername?.trim() ?? "",
       dailyTargetMin: String(input.dailyTargetMin),
@@ -564,37 +640,11 @@ class SheetsStore implements Store {
     return this.toStudent(rec)!;
   }
 
-  async requestOtp(email: string, purpose: string) {
-    const code = otpCode();
-    const expiresAt = String(Date.now() + 10 * 60 * 1000);
-    const existing = await this.tab("otps");
-    if (!existing.length) {
-      await this.admin.appendRows("otps", [
-        ["email", "codeHash", "purpose", "expiresAt"],
-      ]);
-    }
-    await this.admin.appendRows("otps", [
-      [
-        normalizeEmail(email),
-        hash(email + purpose + code),
-        purpose,
-        expiresAt,
-      ],
-    ]);
-    return { code };
-  }
-
-  async verifyOtp(email: string, code: string) {
-    const rows = await this.tab("otps");
-    const norm = normalizeEmail(email);
-    const hit = rows.find(
-      (r) =>
-        r.email?.toLowerCase() === norm &&
-        hash(norm + r.purpose + code) === r.codeHash &&
-        Number(r.expiresAt) > Date.now()
-    );
-    if (!hit) return null;
-    return this.findStudentByEmail(norm);
+  async login(email: string, password: string): Promise<Student | null> {
+    const student = await this.findStudentByEmail(email);
+    if (!student || !student.passwordHash) return null;
+    const isValid = await verifyPassword(password, student.passwordHash);
+    return isValid ? student : null;
   }
 
   async getRooms() {
@@ -645,6 +695,117 @@ class SheetsStore implements Store {
       rules: row.rules,
       active: true,
     } satisfies Challenge;
+  }
+
+  async getChallenge(id: string) {
+    const row = (await this.tab("challenges")).find((r) => r.id === id);
+    if (!row) return null;
+    return {
+      id: row.id,
+      name: row.name,
+      type: row.type as Challenge["type"],
+      startDate: row.startDate,
+      endDate: row.endDate,
+      rules: row.rules,
+      active: row.active === "true",
+    } satisfies Challenge;
+  }
+
+  async listChallenges() {
+    return (await this.tab("challenges"))
+      .map((row) => ({
+        id: row.id,
+        name: row.name,
+        type: row.type as Challenge["type"],
+        startDate: row.startDate,
+        endDate: row.endDate,
+        rules: row.rules,
+        active: row.active === "true",
+      }))
+      .sort((a, b) => Number(b.active) - Number(a.active) || b.startDate.localeCompare(a.startDate));
+  }
+
+  async isParticipant(challengeId: string, studentId: string) {
+    const rows = await this.tab("participants");
+    return rows.some(
+      (r) => r.challengeId === challengeId && r.studentId === studentId
+    );
+  }
+
+  async countParticipants(challengeId: string) {
+    return (await this.tab("participants")).filter(
+      (r) => r.challengeId === challengeId
+    ).length;
+  }
+
+  async listStudyLogs(studentId: string, limit = 60): Promise<StudyLog[]> {
+    const rows = (await this.tab("logs")).filter((l) => l.studentId === studentId);
+    return rows
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, limit)
+      .map(
+        (l) =>
+          ({
+            id: l.id,
+            studentId: l.studentId,
+            date: l.date,
+            minutes: Number(l.minutes) || 0,
+            roomId: l.roomId || undefined,
+            note: l.note || undefined,
+            source: l.source === "timer" ? "timer" : "manual",
+          }) satisfies StudyLog
+      );
+  }
+
+  async listMentorSessions({ includePast = false } = {}) {
+    const rows = await this.tab("mentors");
+    const today = todayKey();
+    return rows
+      .filter((r) => includePast || r.date >= today)
+      .map((m) => ({
+        id: m.id,
+        mentorName: m.mentorName,
+        topic: m.topic,
+        date: m.date,
+        time: m.time,
+        zoomLink: m.zoomLink || undefined,
+        notes: m.notes || undefined,
+        recordingLink: m.recordingLink || undefined,
+      })) satisfies MentorSession[];
+  }
+
+  async getStudyTotals(studentId: string, sinceKey: string) {
+    const mine = (await this.tab("logs")).filter((l) => l.studentId === studentId);
+    const num = (l: Record<string, string>) => Number(l.minutes) || 0;
+    return {
+      windowMinutes: mine.filter((l) => l.date >= sinceKey).reduce((s, l) => s + num(l), 0),
+      totalMinutes: mine.reduce((s, l) => s + num(l), 0),
+      totalSessions: mine.length,
+    };
+  }
+
+  async getLeaderboardRows(sinceKey: string) {
+    const students = await this.tab("students");
+    const logs = await this.tab("logs");
+    const checkins = await this.tab("checkins");
+    return students.map((s) => ({
+      studentId: s.id,
+      name: s.name,
+      klass: s.klass,
+      exam: s.exam,
+      minutes: logs
+        .filter((l) => l.studentId === s.id && l.date >= sinceKey)
+        .reduce((sum, l) => sum + (Number(l.minutes) || 0), 0),
+      checkinsHit: checkins.filter(
+        (c) => c.studentId === s.id && c.date >= sinceKey && c.status !== "miss"
+      ).length,
+    }));
+  }
+
+  async revokeSessions() {}
+
+  async getTokenVersion() {
+    return 0;
   }
 
   async getSettings() {

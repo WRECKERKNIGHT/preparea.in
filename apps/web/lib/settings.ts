@@ -11,7 +11,7 @@ const fallback: PublicSettings = {
 
 export async function getSettings(): Promise<PublicSettings> {
   try {
-    const store = getStore();
+    const store = await getStore();
     const settings = await store.getSettings();
     return { ...fallback, ...settings };
   } catch {

@@ -24,6 +24,8 @@ export function RegisterForm() {
     klass: "",
     exam: "",
     email: "",
+    password: "",
+    confirmPassword: "",
     tgUsername: "",
     discordUsername: "",
     dailyTargetMin: 300,
@@ -44,6 +46,18 @@ export function RegisterForm() {
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       setError("Please enter a valid email address.");
+      return;
+    }
+    if (form.password.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      return;
+    }
+    if (!/[a-zA-Z]/.test(form.password) || !/[0-9]/.test(form.password)) {
+      setError("Password must contain at least one letter and one number.");
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match.");
       return;
     }
     if (form.dailyTargetMin < 15 || form.dailyTargetMin > 720) {
@@ -152,6 +166,39 @@ export function RegisterForm() {
         <p className="mt-1.5 text-xs text-ink-faint">
           Used only for community invites and daily check-in reminders.
         </p>
+      </div>
+
+      <div>
+        <label htmlFor="password" className="label">
+          Password
+        </label>
+        <input
+          id="password"
+          type="password"
+          className="input"
+          autoComplete="new-password"
+          placeholder="Min. 8 characters, with letters and numbers"
+          value={form.password}
+          onChange={(e) => set("password", e.target.value)}
+        />
+        <p className="mt-1.5 text-xs text-ink-faint">
+          Create a password to log in anytime. Must be at least 8 characters.
+        </p>
+      </div>
+
+      <div>
+        <label htmlFor="confirmPassword" className="label">
+          Confirm password
+        </label>
+        <input
+          id="confirmPassword"
+          type="password"
+          className="input"
+          autoComplete="new-password"
+          placeholder="Type your password again"
+          value={form.confirmPassword ?? ""}
+          onChange={(e) => set("confirmPassword", e.target.value)}
+        />
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">

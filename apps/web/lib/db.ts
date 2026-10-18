@@ -191,6 +191,9 @@ export const MIGRATIONS: Migration[] = [
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL
       );
+
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_checkins_student_date
+        ON checkins(studentId, date);
     `,
   },
   {
@@ -223,11 +226,35 @@ export const MIGRATIONS: Migration[] = [
     name: "query_indexes",
     up: `
       CREATE INDEX IF NOT EXISTS idx_logs_student_date ON logs(studentId, date);
-      CREATE INDEX IF NOT EXISTS idx_checkins_student_date ON checkins(studentId, date);
       CREATE INDEX IF NOT EXISTS idx_checkins_date ON checkins(date);
       CREATE INDEX IF NOT EXISTS idx_participants_student ON participants(studentId);
       CREATE INDEX IF NOT EXISTS idx_mentors_date ON mentors(date);
       CREATE INDEX IF NOT EXISTS idx_challenges_active ON challenges(active);
+    `,
+  },
+  {
+    id: "004",
+    name: "add_password_column",
+    up: `
+      ALTER TABLE students ADD COLUMN passwordHash TEXT;
+    `,
+  },
+  {
+    id: "005",
+    name: "password_reset_tokens",
+    up: `
+      CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id TEXT PRIMARY KEY,
+        studentId TEXT NOT NULL,
+        tokenHash TEXT NOT NULL,
+        expiresAt INTEGER NOT NULL,
+        usedAt INTEGER,
+        createdAt TEXT NOT NULL,
+        FOREIGN KEY (studentId) REFERENCES students(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_student ON password_reset_tokens(studentId);
+      CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expires ON password_reset_tokens(expiresAt);
     `,
   },
 ];

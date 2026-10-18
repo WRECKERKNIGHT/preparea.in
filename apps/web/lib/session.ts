@@ -24,8 +24,22 @@ export async function verifySession(token: string): Promise<SessionPayload | nul
   try {
     const { payload } = await jwtVerify(token, secret);
     if (typeof payload.sub !== "string") return null;
-    return { sub: payload.sub, email: String(payload.email ?? "") };
+    if (typeof payload.email !== "string") return null;
+    return { sub: payload.sub, email: payload.email };
   } catch {
     return null;
   }
+}
+
+/**
+ * Rotate token version for a student (invalidates all existing tokens).
+ */
+export async function rotateTokenVersion(
+  studentId: string,
+  store: any
+): Promise<void> {
+  const currentVersion = await store.getTokenVersion(studentId);
+  await store.updateStudent(studentId, {
+    tokenVersion: (currentVersion ?? 0) + 1
+  });
 }

@@ -25,7 +25,7 @@ export default async function SuccessPage({
   const steps = [
     {
       title: "Welcome to PrepArea",
-      body: `You're on the list${joined ? " (member #" + joined + ")" : ""}. Check your email for a verification code the first time you log in.`,
+      body: `You're on the list${joined ? " (member #" + joined + ")" : ""}. You created your account with a password — use it to log in from your dashboard.`,
     },
     {
       icon: Send,

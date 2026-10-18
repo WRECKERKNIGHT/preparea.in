@@ -1,4 +1,4 @@
-﻿import { ok, err, getSession, readJson } from "@/lib/api";
+import { ok, err, getSession, readJson } from "@/lib/api";
 import { getStore } from "@/lib/store";
 
 export async function GET(req: Request) {
@@ -6,7 +6,8 @@ export async function GET(req: Request) {
   if (!session) return err("unauthorized", "Log in to view your dashboard.", 401);
 
   try {
-    const data = await getStore().getDashboard(session.sub);
+    const store = await getStore();
+    const data = await store.getDashboard(session.sub);
     return ok(data);
   } catch (e) {
     return err(
@@ -24,10 +25,11 @@ export async function PATCH(req: Request) {
   const body = await readJson(req);
   const target = Number(body.dailyTargetMin);
   if (!Number.isFinite(target) || target < 15 || target > 720) {
-    return err("invalid_target", "Daily target must be 15–720 minutes.");
+    return err("invalid_target", "Daily target must be 15�720 minutes.");
   }
 
-  const student = await getStore().updateStudent(session.sub, {
+  const store = await getStore();
+  const student = await store.updateStudent(session.sub, {
     dailyTargetMin: target,
   });
   if (!student) return err("not_found", "Account not found.", 404);

@@ -12,10 +12,15 @@ export function err(
   message: string,
   status = 400
 ): NextResponse {
-  return NextResponse.json({ ok: false, error: { code, message } }, { status });
+  return NextResponse.json(
+    { ok: false, error: { code, message } },
+    { status }
+  );
 }
 
-export async function readJson(req: Request): Promise<Record<string, unknown>> {
+export async function readJson(
+  req: Request
+): Promise<Record<string, unknown>> {
   try {
     return (await req.json()) as Record<string, unknown>;
   } catch {
@@ -66,4 +71,17 @@ export function withSessionCookie(
 ): NextResponse {
   res.headers.set("Set-Cookie", sessionCookie(token, maxAgeSeconds));
   return res;
+}
+
+/**
+ * Get client IP from request (handles proxies).
+ */
+export function getClientIp(req: Request): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) {
+    return forwarded.split(",")[0].trim();
+  }
+  // In production, use the remote address
+  const url = new URL(req.url);
+  return url.hostname === "localhost" ? "127.0.0.1" : url.hostname;
 }

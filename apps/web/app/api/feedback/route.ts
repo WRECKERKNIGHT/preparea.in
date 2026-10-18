@@ -17,6 +17,6 @@ export async function POST(req: Request) {
     features: body.features ? String(body.features) : undefined,
   };
 
-  await getStore().submitFeedback(session.sub, input);
+  (await getStore()).submitFeedback(session.sub, input);
   return ok({ submitted: true });
 }

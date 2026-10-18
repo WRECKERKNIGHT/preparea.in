@@ -13,12 +13,18 @@ export interface Student {
   klass: string;
   exam: string;
   email: string;
+  passwordHash?: string;
   tgUsername?: string;
   discordUsername?: string;
   dailyTargetMin: number;
   mainChallenge?: string;
   status: StudentStatus;
   createdAt: string;
+  /**
+   * Bumped on logout/password-equivalent changes. Sessions carry the version
+   * they were minted with, so raising it invalidates every issued token.
+   */
+  tokenVersion?: number;
 }
 
 export type StudentStatus = (typeof STUDENT_STATUS)[number];
@@ -114,11 +120,19 @@ export interface RegisterInput {
   klass: string;
   exam: string;
   email: string;
+  password: string;
+  confirmPassword?: string;
+  passwordHash?: string;
   tgUsername?: string;
   discordUsername?: string;
   dailyTargetMin: number;
   mainChallenge?: string;
   source?: string;
+}
+
+export interface LoginInput {
+  email: string;
+  password: string;
 }
 
 export interface CheckinInput {
@@ -169,29 +183,6 @@ export interface TrialInfo {
   daysRemaining: number;
   active: boolean;
   expired: boolean;
-}
-
-export function trialInfo(createdAt?: string): TrialInfo {
-  const start = createdAt ? new Date(createdAt) : new Date();
-  const endsAt = new Date(start);
-  endsAt.setDate(endsAt.getDate() + TRIAL_DAYS);
-  const endTime = endsAt.getTime();
-  const daysRemaining = Math.max(
-    0,
-    Math.ceil((endTime - Date.now()) / (1000 * 60 * 60 * 24))
-  );
-  return {
-    startedAt: start.toISOString(),
-    endsAt: endsAt.toISOString(),
-    daysTotal: TRIAL_DAYS,
-    daysRemaining,
-    active: Date.now() < endTime,
-    expired: Date.now() >= endTime,
-  };
-}
-
-export function otpCode(): string {
-  return String(Math.floor(100000 + Math.random() * 900000));
 }
 
 export interface DayBuckets {

@@ -100,50 +100,24 @@ export function DashboardClient() {
 // ---------------------------------------------------------------------------
 
 function LoginGate({ onLoggedIn }: { onLoggedIn: () => void }) {
-  const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
-  const [devCode, setDevCode] = useState<string | undefined>();
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function requestCode(e: React.FormEvent) {
+  async function login(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch("/api/auth/request-otp", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, password }),
       });
       const json = await res.json();
       if (!json.ok) {
-        setError(json.error?.message ?? "Could not send the code.");
-        return;
-      }
-      setDevCode(json.data?.devCode);
-      setStep("code");
-    } catch {
-      setError("Network error. Try again.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function verify(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setBusy(true);
-    try {
-      const res = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code }),
-      });
-      const json = await res.json();
-      if (!json.ok) {
-        setError(json.error?.message ?? "Invalid code.");
+        setError(json.error?.message ?? "Invalid credentials.");
         return;
       }
       if (json.data?.token) {
@@ -164,96 +138,62 @@ function LoginGate({ onLoggedIn }: { onLoggedIn: () => void }) {
           Member dashboard
         </p>
         <h1 className="mt-3 font-serif text-3xl font-medium text-ink">
-          {step === "email" ? "Log in with your email" : "Enter the code"}
+          Log in to PrepArea
         </h1>
         <p className="mt-2 text-sm text-ink-muted">
-          {step === "email"
-            ? "We send a 6-digit code. No passwords to remember."
-            : `We emailed a code to ${email}. It expires in 10 minutes.`}
+          Enter your email and password to access your study dashboard.
         </p>
-        {devCode && step === "code" ? (
-          <p className="mt-3 rounded-[6px] border border-edge bg-raised px-4 py-2 text-sm">
-            Dev code: <span className="font-bold text-accent">{devCode}</span>
-          </p>
-        ) : null}
       </div>
 
       <div className="card mt-8 p-6">
-        {step === "email" ? (
-          <form onSubmit={requestCode} className="space-y-4">
-            <div>
-              <label htmlFor="login-email" className="label">
-                Email
-              </label>
-              <input
-                id="login-email"
-                type="email"
-                className="input"
-                autoComplete="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            {error ? (
-              <p className="text-sm text-error" role="alert">
-                {error}
-              </p>
-            ) : null}
-            <button
-              type="submit"
-              disabled={busy}
-              className="btn-primary w-full justify-center disabled:opacity-60"
-            >
-              {busy ? (
-                <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
-              ) : (
-                "Send code"
-              )}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={verify} className="space-y-4">
-            <div>
-              <label htmlFor="code" className="label">
-                6-digit code
-              </label>
-              <input
-                id="code"
-                className="input number text-center text-xl tracking-[0.5em]"
-                inputMode="numeric"
-                maxLength={6}
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                required
-              />
-            </div>
-            {error ? (
-              <p className="text-sm text-error" role="alert">
-                {error}
-              </p>
-            ) : null}
-            <button
-              type="submit"
-              disabled={busy}
-              className="btn-primary w-full justify-center disabled:opacity-60"
-            >
-              {busy ? (
-                <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
-              ) : (
-                "Verify & open dashboard"
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => setStep("email")}
-              className="w-full text-center text-sm text-ink-faint hover:text-ink"
-            >
-              Use a different email
-            </button>
-          </form>
-        )}
+        <form onSubmit={login} className="space-y-4">
+          <div>
+            <label htmlFor="login-email" className="label">
+              Email
+            </label>
+            <input
+              id="login-email"
+              type="email"
+              className="input"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="login-password" className="label">
+              Password
+            </label>
+            <input
+              id="login-password"
+              type="password"
+              className="input"
+              autoComplete="current-password"
+              placeholder="Your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          {error ? (
+            <p className="text-sm text-error" role="alert">
+              {error}
+            </p>
+          ) : null}
+          <button
+            type="submit"
+            disabled={busy}
+            className="btn-primary w-full justify-center disabled:opacity-60"
+          >
+            {busy ? (
+              <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+            ) : (
+              "Log in"
+            )}
+          </button>
+        </form>
       </div>
 
       <p className="mt-6 text-center text-xs text-ink-faint">
@@ -262,7 +202,7 @@ function LoginGate({ onLoggedIn }: { onLoggedIn: () => void }) {
           href="/register"
           className="font-semibold text-accent hover:text-accent-hover"
         >
-          Join the community instead
+          Create an account
         </a>
       </p>
     </div>

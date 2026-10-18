@@ -61,6 +61,24 @@ All routes live in `apps/web/app/api/*` and are shared by web + mobile. Auth is
 email OTP (no passwords) with a signed bearer JWT. See `PLAN.md` §5 for the
 full surface.
 
+### Email Verification
+
+To enable email OTP delivery, configure Resend (recommended) or Gmail SMTP:
+
+```bash
+# In .env.local
+RESEND_API_KEY=re_...           # Get from https://resend.com
+RESEND_FROM="PrepArea <onboarding@preparea.in>"
+```
+
+**Testing email locally:**
+```bash
+# Test endpoint returns dev code without sending email
+curl "http://localhost:3000/api/test-email?email=your@email.com"
+```
+
+In development mode, OTP codes are logged to the console instead of sent.
+
 ## Docs
 
 - `docs/PRD.md` — product requirements

@@ -19,6 +19,6 @@ export async function POST(req: Request) {
     source: body.source === "timer" ? "timer" : undefined,
   };
 
-  const log = await getStore().logStudy(session.sub, input);
+  const log = (await getStore()).logStudy(session.sub, input);
   return ok(log);
 }

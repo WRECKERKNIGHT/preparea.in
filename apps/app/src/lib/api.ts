@@ -91,15 +91,8 @@ export async function authedApi<T>(
   return api<T>(path, { ...opts, token: session?.token ?? null });
 }
 
-export async function requestOtp(email: string): Promise<ApiEnvelope<{ devCode?: string; cooldown?: number }>> {
-  return api("/api/auth/request-otp", { method: "POST", body: { email } });
-}
-
-export async function verifyOtp(
-  email: string,
-  code: string,
-): Promise<ApiEnvelope<{ id: string; email: string; token: string }>> {
-  return api("/api/auth/verify-otp", { method: "POST", body: { email, code } });
+export async function login(email: string, password: string): Promise<ApiEnvelope<{ id: string; email: string; name: string; token: string }>> {
+  return api("/api/auth/login", { method: "POST", body: { email, password } });
 }
 
 export async function fetchMe(token: string): Promise<ApiEnvelope<DashboardMe>> {

@@ -61,6 +61,7 @@
   --animate-twinkle: twinkle 3.2s ease-in-out infinite;
   --animate-shimmer: shimmer 2.6s linear infinite;
   --animate-marquee: marquee 28s linear infinite;
+  --animate-gradient: gradient-shift 15s ease infinite alternate;
 
   --keyframes-float: {
     from, to { transform: translateY(0) rotate(0deg); }
@@ -81,6 +82,10 @@
   --keyframes-pulse-glow: {
     from, to { box-shadow: 0 0 20px 2px rgba(240, 184, 74, 0.45), 0 0 60px 10px rgba(240, 184, 74, 0.18); }
     50% { box-shadow: 0 0 34px 8px rgba(240, 184, 74, 0.7), 0 0 90px 22px rgba(240, 184, 74, 0.3); }
+  }
+  --keyframes-gradient-shift: {
+    from { background-position: 0% 50%; }
+    to { background-position: 100% 50%; }
   }
 }
 
@@ -423,6 +428,15 @@
     box-shadow:
       0 0 34px 8px rgba(240, 184, 74, 0.65),
       0 0 90px 22px rgba(240, 184, 74, 0.28);
+  }
+}
+
+@keyframes gradient-shift {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
   }
 }
 

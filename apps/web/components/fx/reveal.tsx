@@ -34,10 +34,16 @@ export function Reveal({
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
+
     const reduce = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
-    if (reduce) return;
+    if (reduce) {
+      // Disable animation for reduced motion
+      el.style.opacity = "1";
+      el.style.transform = "none";
+      return;
+    }
 
     const tween = gsap.fromTo(
       el,
@@ -54,6 +60,7 @@ export function Reveal({
           trigger: el,
           start: "top 86%",
           once,
+          toggleActions: "play none none reverse",
         },
       }
     );

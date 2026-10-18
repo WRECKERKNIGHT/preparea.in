@@ -21,6 +21,6 @@ export async function POST(req: Request) {
     return err("invalid_target", "Target must be a number.");
   }
 
-  const checkin = await getStore().upsertCheckin(session.sub, input);
+  const checkin = (await getStore()).upsertCheckin(session.sub, input);
   return ok(checkin);
 }
