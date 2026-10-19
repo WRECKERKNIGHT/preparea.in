@@ -1,21 +1,27 @@
+"use client";
+
 import { useState } from "react";
 import { useStudyTimer } from "@/lib/use-study-timer";
-import { Button, Input, Textarea, Card, T, TSerif, Badge } from "@/components/ui";
-import { useRouter } from "expo-router";
-import { Rooms } from "@/components/fx/hero-scene"; // Reuse room selection
+import { Button, Textarea, Card, T, TSerif, Badge } from "@/components/ui";
+import { useRouter } from "next/navigation";
+
+const Rooms: Record<string, { name: string; day: string; time: string }> = {
+  "room-morning": { name: "Morning Focus", day: "6:00 – 8:00 AM", time: "06:00" },
+  "room-afternoon": { name: "Afternoon Focus", day: "1:00 – 3:00 PM", time: "13:00" },
+  "room-evening": { name: "Evening Focus", day: "6:00 – 9:00 PM", time: "18:00" },
+  "room-night": { name: "Night Focus", day: "10:00 PM – 12:00 AM", time: "22:00" },
+};
 
 export default function StudyTimer() {
   const {
     isRunning,
     elapsedSeconds,
     rawElapsedSeconds,
-    roomId,
     note,
     setNote,
     startTimer,
     stopTimer,
-    resetTimer,
-    saveStudyLog
+    resetTimer
   } = useStudyTimer();
 
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
@@ -30,8 +36,7 @@ export default function StudyTimer() {
   };
 
   const handleStop = async () => {
-    await stopTimer();
-    await saveStudyLog();
+    await stopTimer(); // stopTimer persists the session
     router.push("/dashboard"); // Redirect to dashboard after stopping
   };
 

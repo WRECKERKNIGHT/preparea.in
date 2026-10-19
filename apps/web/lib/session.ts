@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
+import type { Store } from "@/lib/store";
 
 const secret = new TextEncoder().encode(
   process.env.JWT_SECRET ?? "preparea-dev-secret-change-me"
@@ -36,7 +37,7 @@ export async function verifySession(token: string): Promise<SessionPayload | nul
  */
 export async function rotateTokenVersion(
   studentId: string,
-  store: any
+  store: Pick<Store, "getTokenVersion" | "updateStudent">
 ): Promise<void> {
   const currentVersion = await store.getTokenVersion(studentId);
   await store.updateStudent(studentId, {

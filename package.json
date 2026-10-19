@@ -19,5 +19,8 @@
     "unrs-resolver",
     "@next/swc-linux-x64-gnu",
     "@next/swc-linux-x64-musl"
-  ]
+  ],
+  "overrides": {
+    "react-native-screens": "4.26.2"
+  }
 }

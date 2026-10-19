@@ -1,11 +1,23 @@
-import { prisma } from "./db";
-import type {
-  StudyLog,
-  Checkin,
-  Student,
-  DashboardMe
-} from "@preparea/shared";
+import { createDb, migrate, resolveDbConfig, type DbConfig } from "./db";
+import type { Client } from "@libsql/client";
 import { dayKey, todayKey } from "@/lib/dates";
+
+/**
+ * Shared handle for the analytics queries. The client is memoised per process
+ * so repeated calls within one request window reuse a single connection.
+ */
+let cached: { key: string; client: Client } | null = null;
+
+async function getDb(): Promise<Client> {
+  const config = resolveDbConfig();
+  const key = JSON.stringify(config);
+  if (cached && cached.key === key) return cached.client;
+
+  const client = createDb(config);
+  await migrate(client);
+  cached = { key, client };
+  return client;
+}
 
 /**
  * Get study analytics for a student over a date range
@@ -15,54 +27,63 @@ export async function getStudyAnalytics(
   startDate: string,
   endDate: string
 ) {
-  // Get study logs in date range
-  const logs = await prisma.studyLog.findMany({
-    where: {
-      studentId,
-      date: {
-        gte: startDate,
-        lte: endDate,
-      },
-    },
-    orderBy: {
-      date: "asc",
-    },
+  const db = await getDb();
+
+  const logRes = await db.execute({
+    sql: `SELECT date, minutes FROM logs
+          WHERE studentId = ? AND date >= ? AND date <= ?
+          ORDER BY date ASC`,
+    args: [studentId, startDate, endDate],
   });
 
-  // Get checkins in date range
-  const checkins = await prisma.checkin.findMany({
-    where: {
-      studentId,
-      date: {
-        gte: startDate,
-        lte: endDate,
-      },
-    },
-    orderBy: {
-      date: "asc",
-    },
+  const checkinRes = await db.execute({
+    sql: `SELECT date, status FROM checkins
+          WHERE studentId = ? AND date >= ? AND date <= ?
+          ORDER BY date ASC`,
+    args: [studentId, startDate, endDate],
   });
+
+  const logs = logRes.rows.map((r) => ({
+    date: String(r.date),
+    minutes: Number(r.minutes) || 0,
+  }));
+
+  const checkins = checkinRes.rows.map((r) => ({
+    date: String(r.date),
+    status: String(r.status),
+  }));
 
   // Calculate daily totals
-  const dailyStats = {};
+  type CheckinCounts = { hit: number; partial: number; miss: number };
+  const dailyStats: Record<
+    string,
+    {
+      date: string;
+      studyMinutes: number;
+      checkins: CheckinCounts;
+      targetMet: boolean;
+    }
+  > = {};
 
   // Initialize all dates in range
-  let current = new Date(startDate);
-  const end = new Date(endDate);
+  const start = new Date(`${startDate}T00:00:00`);
+  const end = new Date(`${endDate}T00:00:00`);
 
-  while (current <= end) {
-    const dateStr = current.toISOString().split('T')[0];
-    dailyStats[dateStr] = {
-      date: dateStr,
-      studyMinutes: 0,
-      checkins: {
-        hit: 0,
-        partial: 0,
-        miss: 0,
-      },
-      targetMet: false,
-    };
-    current.setDate(current.getDate() + 1);
+  if (!Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime())) {
+    const cursor = new Date(start);
+    while (cursor <= end) {
+      const y = cursor.getFullYear();
+      const m = String(cursor.getMonth() + 1).padStart(2, "0");
+      const d = String(cursor.getDate()).padStart(2, "0");
+      const dateStr = `${y}-${m}-${d}`;
+      dailyStats[dateStr] = {
+        date: dateStr,
+        studyMinutes: 0,
+        checkins: { hit: 0, partial: 0, miss: 0 },
+        targetMet: false,
+      };
+      cursor.setDate(cursor.getDate() + 1);
+    }
   }
 
   // Aggregate study logs
@@ -74,21 +95,23 @@ export async function getStudyAnalytics(
 
   // Aggregate checkins
   for (const checkin of checkins) {
-    if (dailyStats[checkin.date]) {
-      dailyStats[checkin.date].checkins[checkin.status as keyof typeof dailyStats[0].checkins] += 1;
+    const bucket = dailyStats[checkin.date];
+    if (!bucket) continue;
 
-      // Check if target was met (hit or partial counts as meeting target for motivation)
-      if (checkin.status === "hit" || checkin.status === "partial") {
-        dailyStats[checkin.date].targetMet = true;
-      }
+    if (checkin.status === "hit" || checkin.status === "partial") {
+      bucket.checkins[checkin.status as "hit" | "partial"] += 1;
+      bucket.targetMet = true;
+    } else if (checkin.status === "miss") {
+      bucket.checkins.miss += 1;
     }
   }
 
   // Calculate summary stats
   const totalStudyMinutes = logs.reduce((sum, log) => sum + log.minutes, 0);
   const totalCheckins = checkins.length;
-  const hitCheckins = checkins.filter(c => c.status === "hit").length;
-  const consistencyRate = totalCheckins > 0 ? (hitCheckins / totalCheckins) * 100 : 0;
+  const hitCheckins = checkins.filter((c) => c.status === "hit").length;
+  const consistencyRate =
+    totalCheckins > 0 ? (hitCheckins / totalCheckins) * 100 : 0;
 
   // Calculate streaks
   let currentStreak = 0;
@@ -98,9 +121,8 @@ export async function getStudyAnalytics(
   for (const date of dates) {
     const day = dailyStats[date];
     const studied = day.studyMinutes > 0;
-    const targetMet = day.targetMet;
 
-    if (studied || targetMet) {
+    if (studied || day.targetMet) {
       currentStreak++;
       maxStreak = Math.max(maxStreak, currentStreak);
     } else {
@@ -118,38 +140,33 @@ export async function getStudyAnalytics(
       currentStreak,
       maxStreak,
       daysTracked: dates.length,
-      daysWithActivity: dates.filter(d =>
-        dailyStats[d].studyMinutes > 0 || dailyStats[d].targetMet
+      daysWithActivity: dates.filter(
+        (d) => dailyStats[d].studyMinutes > 0 || dailyStats[d].targetMet
       ).length,
-    }
+    },
   };
 }
 
 /**
- * Get subject-wise breakdown (if we add subject tracking to logs)
+ * Get subject-wise breakdown (falls back to the exam on the profile)
  */
-export async function getSubjectAnalytics(
-  studentId: string,
-  startDate: string,
-  endDate: string
-) {
-  // Placeholder for when we add subject tracking
-  // For now, return mock data based on exams from student profile
-  const student = await prisma.student.findUnique({
-    where: { id: studentId },
-    select: { exam: true },
+export async function getSubjectAnalytics(studentId: string) {
+  const db = await getDb();
+  const res = await db.execute({
+    sql: "SELECT exam FROM students WHERE id = ?",
+    args: [studentId],
   });
 
-  if (!student) return [];
+  if (!res.rows.length) return [];
+  const exam = String(res.rows[0].exam ?? "");
 
-  // Return basic breakdown by exam subject
   return [
     {
-      subject: student.exam,
-      minutes: 0, // Would be calculated from tagged logs
+      subject: exam,
+      minutes: 0,
       percentage: 100,
       sessions: 0,
-    }
+    },
   ];
 }
 
@@ -174,7 +191,10 @@ export async function getPerformanceTrends(
     weekMinutes += day.studyMinutes;
     weekDays++;
 
-    if (weekDays === 7 || day.date === analytics.dailyStats[analytics.dailyStats.length - 1].date) {
+    if (
+      weekDays === 7 ||
+      day.date === analytics.dailyStats[analytics.dailyStats.length - 1].date
+    ) {
       weeklyData.push({
         weekEnd: day.date,
         averageMinutesPerDay: weekMinutes / weekDays,
@@ -192,3 +212,5 @@ export async function getPerformanceTrends(
     summary: analytics.summary,
   };
 }
+
+export type { DbConfig };

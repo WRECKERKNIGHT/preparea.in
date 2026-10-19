@@ -1,24 +1,29 @@
-import { format } from "date-fns";
-
 /**
  * Format date for display in analytics
  */
 export function formatDate(dateString: string): string {
-  return format(new Date(dateString), "MMM d, yyyy");
+  return new Date(dateString).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 /**
  * Format date for short display (e.g., x-axis labels)
  */
 export function formatShortDate(dateString: string): string {
-  return format(new Date(dateString), "MMM d");
+  return new Date(dateString).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
 }
 
 /**
  * Format date for date picker inputs
  */
 export function formatDateForInput(date: Date): string {
-  return date.toISOString().split('T')[0];
+  return date.toISOString().split("T")[0];
 }
 
 /**

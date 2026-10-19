@@ -1,11 +1,45 @@
 import { useState, useEffect, useCallback } from "react";
 import type { StudyLogInput } from "@preparea/shared";
-import { api, saveSession, fetchMe } from "@/lib/api";
-import * as FileSystem from "expo-file-system";
-import { Buffer } from "buffer";
+import { api, loadSession } from "@/lib/api";
+import { File, Paths } from "expo-file-system";
+
+const TIMER_STATE_KEY = "study-timer-state";
+
+interface SavedTimerState {
+  isRunning?: boolean;
+  elapsedSeconds?: number;
+  roomId?: string | null;
+  note?: string;
+}
+
+function timerFile(): File {
+  return new File(Paths.document, `${TIMER_STATE_KEY}.json`);
+}
+
+async function readSavedState(): Promise<SavedTimerState | null> {
+  try {
+    const file = timerFile();
+    if (!file.exists) return null;
+    return JSON.parse(await file.text()) as SavedTimerState;
+  } catch {
+    return null;
+  }
+}
+
+async function writeSavedState(state: SavedTimerState): Promise<void> {
+  try {
+    const file = timerFile();
+    if (!file.exists) {
+      file.create({ intermediates: true, overwrite: true });
+    }
+    file.write(JSON.stringify(state));
+  } catch (error) {
+    console.debug("Failed to persist timer state:", error);
+  }
+}
 
 /**
- * Hook for managing a study timer with persistence using AsyncStorage
+ * Hook for managing a study timer with file-based persistence
  */
 export function useStudyTimer() {
   const [isRunning, setIsRunning] = useState(false);
@@ -13,146 +47,96 @@ export function useStudyTimer() {
   const [roomId, setRoomId] = useState<string | null>(null);
   const [note, setNote] = useState<string>("");
 
-  const TIMER_STATE_KEY = "study-timer-state";
-
-  // Load saved timer state from AsyncStorage on init
-  useEffect(() => {
-    loadTimerState();
+  const resetTimer = useCallback(() => {
+    setIsRunning(false);
+    setElapsedSeconds(0);
+    setRoomId(null);
+    setNote("");
+    try {
+      const file = timerFile();
+      if (file.exists) file.delete();
+    } catch {
+      // Nothing to clean up if storage is unavailable.
+    }
   }, []);
 
-  const loadTimerState = useCallback(async () => {
+  const saveStudyLog = useCallback(async () => {
+    if (elapsedSeconds <= 0) return;
     try {
-      const content = await FileSystem.readAsStringAsync(
-        `${FileSystem.documentDirectory}${TIMER_STATE_KEY}.json`,
-        { encoding: FileSystem.EncodingType.UTF8 }
-      );
-      if (content) {
-        const state = JSON.parse(content);
-        setElapsedSeconds(state.elapsedSeconds ?? 0);
-        setIsRunning(state.isRunning ?? false);
-        setRoomId(state.roomId ?? null);
-        setNote(state.note ?? "");
+      const session = await loadSession();
+      if (!session) {
+        throw new Error("No active session");
       }
+
+      const input: StudyLogInput = {
+        minutes: Math.max(1, Math.round(elapsedSeconds / 60)),
+        roomId: roomId ?? undefined,
+        note,
+        source: "timer",
+      };
+      await api(`/api/logs`, {
+        method: "POST",
+        body: input,
+        token: session.token,
+      });
+      resetTimer();
     } catch (error) {
-      // File doesn't exist yet or other error - that's OK
-      console.debug("No saved timer state found:", error.message);
+      console.error("Failed to save study log:", error);
+      // Keep the elapsed time so the user can retry.
     }
+  }, [elapsedSeconds, roomId, note, resetTimer]);
+
+  // Restore saved state after mount.
+  useEffect(() => {
+    let cancelled = false;
+    void readSavedState().then((saved) => {
+      if (!saved || cancelled) return;
+      setElapsedSeconds(saved.elapsedSeconds ?? 0);
+      setIsRunning(saved.isRunning ?? false);
+      setRoomId(saved.roomId ?? null);
+      setNote(saved.note ?? "");
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Save state to AsyncStorage whenever it changes
+  // Mirror state to disk whenever it changes.
   useEffect(() => {
-    saveTimerState();
+    void writeSavedState({ isRunning, elapsedSeconds, roomId, note });
   }, [isRunning, elapsedSeconds, roomId, note]);
 
-  const saveTimerState = useCallback(async () => {
-    try {
-      const state = {
-        isRunning,
-        elapsedSeconds,
-        roomId,
-        note,
-      };
-      const content = JSON.stringify(state);
-      await FileSystem.writeAsStringAsync(
-        `${FileSystem.documentDirectory}${TIMER_STATE_KEY}.json`,
-        content,
-        { encoding: FileSystem.EncodingType.UTF8 }
-      );
-    } catch (error) {
-      console.error("Failed to save timer state:", error);
-    }
-  }, [isRunning, elapsedSeconds, roomId, note]);
-
-  // Handle timer ticking
+  // Tick once per second while running.
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    if (isRunning) {
-      interval = setInterval(() => {
-        setElapsedSeconds((prev) => prev + 1);
-      }, 1000);
-    } else if (!isRunning && elapsedSeconds > 0) {
-      // Timer was stopped, save the log
-      saveStudyLog();
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isRunning, elapsedSeconds]);
+    if (!isRunning) return;
+    const interval = setInterval(() => {
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isRunning]);
 
   const startTimer = useCallback(
     async (roomIdParam: string | null, noteParam: string) => {
       setRoomId(roomIdParam);
       setNote(noteParam);
       setIsRunning(true);
-      // Save initial state immediately
-      await saveTimerState();
+      setElapsedSeconds(0);
+      await writeSavedState({
+        isRunning: true,
+        elapsedSeconds: 0,
+        roomId: roomIdParam,
+        note: noteParam,
+      });
     },
     []
   );
 
   const stopTimer = useCallback(async () => {
     setIsRunning(false);
-    // The useEffect above will handle saving when stopped
-  }, []);
-
-  const resetTimer = useCallback(() => {
-    setIsRunning(false);
-    setElapsedSeconds(0);
-    setRoomId(null);
-    setNote("");
-    // Delete the timer state file
-    FileSystem.deleteAsync(
-      `${FileSystem.documentDirectory}${TIMER_STATE_KEY}.json`,
-      { idempotent: true }
-    ).catch(console.error);
-  }, []);
-
-  const saveStudyLog = useCallback(async () => {
-    if (elapsedSeconds > 0) {
-      try {
-        // Get current session to get auth token
-        const session = await loadSession();
-        if (!session) {
-          throw new Error("No active session");
-        }
-
-        const input: StudyLogInput = {
-          minutes: Math.round(elapsedSeconds / 60),
-          roomId,
-          note,
-          source: "timer",
-        };
-        await api(`/api/logs`, {
-          method: "POST",
-          body: input,
-          token: session.token,
-        });
-        // Reset after successful save
-        resetTimer();
-      } catch (error) {
-        console.error("Failed to save study log:", error);
-        // Keep timer running so user can retry
-        // In a real app, we might show a retry option
-      }
-    }
-  }, [elapsedSeconds, roomId, note, resetTimer]);
-
-  const loadSession = useCallback(async () => {
-    try {
-      if (globalThis.platform === "web") {
-        const raw = globalThis.localStorage?.getItem("pa_token");
-        if (!raw) return null;
-        return JSON.parse(raw);
-      }
-      const file = new File(FileSystem.documentDirectory, "session.json");
-      const exists = await FileSystem.getInfo(file.uri);
-      if (!exists.exists) return null;
-      const content = await FileSystem.readAsStringAsync(file.uri);
-      return JSON.parse(content);
-    } catch {
-      return null;
-    }
-  }, []);
+    // Persist the session as part of stopping, so callers never have to
+    // remember a second explicit save.
+    await saveStudyLog();
+  }, [saveStudyLog]);
 
   const formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);

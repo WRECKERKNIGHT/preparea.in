@@ -1,6 +1,8 @@
+"use client";
+
 import { useState } from "react";
 import { Calendar } from "lucide-react";
-import { Button, Input } from ".";
+import { Button, Input, T } from "@/components/ui";
 
 interface DatePickerProps {
   start: Date;
@@ -8,7 +10,12 @@ interface DatePickerProps {
   onChange: (range: { start: Date; end: Date }) => void;
 }
 
-export default function DatePicker({ start, end, onChange }: DatePickerProps) {
+function toDateInput(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+export function DatePicker({ start, end, onChange }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedStart, setSelectedStart] = useState(start);
   const [selectedEnd, setSelectedEnd] = useState(end);
@@ -27,40 +34,31 @@ export default function DatePicker({ start, end, onChange }: DatePickerProps) {
       >
         <Calendar className="mr-2 h-4 w-4" />
         <span>
-          {selectedStart.toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-          })} -
-          {selectedEnd.toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-          })}
+          {selectedStart.toLocaleDateString()} – {selectedEnd.toLocaleDateString()}
         </span>
       </Button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-2 w-64 bg-background border rounded-md shadow-lg p-4">
+        <div className="absolute z-50 mt-2 w-64 rounded-md border border-ink/10 bg-white p-4 shadow-lg">
           <div className="space-y-4">
             <div>
-              <T className="font-medium mb-2">Start Date</T>
+              <T className="mb-2 block font-medium">Start Date</T>
               <Input
                 type="date"
-                value={selectedStart.toISOString().split("T")[0]}
+                value={toDateInput(selectedStart)}
                 onChange={(e) => {
-                  const date = new Date(e.target.value);
-                  setSelectedStart(date);
+                  if (e.target.value) setSelectedStart(new Date(e.target.value));
                 }}
                 className="w-full"
               />
             </div>
             <div>
-              <T className="font-medium mb-2">End Date</T>
+              <T className="mb-2 block font-medium">End Date</T>
               <Input
                 type="date"
-                value={selectedEnd.toISOString().split("T")[0]}
+                value={toDateInput(selectedEnd)}
                 onChange={(e) => {
-                  const date = new Date(e.target.value);
-                  setSelectedEnd(date);
+                  if (e.target.value) setSelectedEnd(new Date(e.target.value));
                 }}
                 className="w-full"
               />
@@ -75,5 +73,4 @@ export default function DatePicker({ start, end, onChange }: DatePickerProps) {
   );
 }
 
-// We need to import T from somewhere - let's create a simple text component
-// For now, we'll use a placeholder - in reality this would be from @/components/ui
+export default DatePicker;

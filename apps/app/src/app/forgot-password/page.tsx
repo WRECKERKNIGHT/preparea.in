@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { isEmail, normalizeEmail } from "@preparea/shared";
@@ -72,3 +72,15 @@ export default function ForgotPassword() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: theme.paper },
+  content: { padding: spacing.lg, paddingTop: spacing.xl },
+  title: { fontSize: 28, marginBottom: spacing.sm, color: theme.ink },
+  sub: {
+    fontSize: 15,
+    color: theme.inkMuted,
+    marginBottom: spacing.lg,
+    lineHeight: 22,
+  },
+});

@@ -3,7 +3,7 @@ import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } f
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CLASSES, EXAMS, isEmail, normalizeEmail, type Exam } from "@preparea/shared";
-import { api, saveSession, fetchMe } from "@/lib/api";
+import { api } from "@/lib/api";
 import { Btn, Card, Field, T, TSerif } from "@/components/ui";
 import { theme, spacing } from "@/constants/theme";
 

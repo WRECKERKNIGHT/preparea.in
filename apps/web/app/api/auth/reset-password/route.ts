@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/db";
 import { ok, err, readJson } from "@/lib/api";
-import { generateResetToken, createResetToken, validateResetToken, useResetToken } from "@/lib/password-reset";
+import { getStore } from "@/lib/store";
+import { createResetToken } from "@/lib/password-reset";
 
 export async function POST(req: Request) {
   try {
@@ -11,29 +11,23 @@ export async function POST(req: Request) {
       return err("missing_email", "Email is required.");
     }
 
-    // Find student by email
-    const student = await prisma.student.findUnique({
-      where: { email },
-    });
+    // Look the account up through the store so this works on every backend.
+    const student = await (await getStore()).findStudentByEmail(email);
 
-    if (!student) {
-      // Don't reveal that the email doesn't exist for security
-      // But still return ok to prevent email enumeration
-      return ok({ message: "If the email exists, a reset link has been sent." });
-    }
+    // Never reveal whether the email exists, to prevent enumeration.
+    const message = "If the email exists, a reset link has been sent.";
+    if (!student) return ok({ message });
 
-    // Generate reset token and store it
-    const token = await generateResetToken();
-    await createResetToken(student.id, token);
+    const issued = await createResetToken(student.id);
 
-    // TODO: Actually send email with reset link
-    // For now, we'll return the token in development
-    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password?token=${token}`;
+    const resetLink = `${
+      process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+    }/reset-password?token=${issued}`;
 
     return ok({
-      message: "If the email exists, a reset link has been sent.",
+      message,
       // In development, return the link for testing
-      ...(process.env.NODE_ENV === "development" && { resetLink })
+      ...(process.env.NODE_ENV === "development" && { resetLink }),
     });
   } catch (error) {
     console.error("Password reset error:", error);

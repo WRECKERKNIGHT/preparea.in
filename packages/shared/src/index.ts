@@ -185,6 +185,31 @@ export interface TrialInfo {
   expired: boolean;
 }
 
+/**
+ * Derives trial window state from the moment an account was created.
+ * Purely date-math so both web and mobile render the same numbers.
+ */
+export function trialInfo(startedAt: string): TrialInfo {
+  const started = new Date(startedAt);
+  const startMs = Number.isNaN(started.getTime()) ? Date.now() : started.getTime();
+  const endsMs = startMs + TRIAL_DAYS * 86_400_000;
+
+  const daysTotal = TRIAL_DAYS;
+  const daysRemaining = Math.max(
+    0,
+    Math.ceil((endsMs - Date.now()) / 86_400_000)
+  );
+
+  return {
+    startedAt: new Date(startMs).toISOString(),
+    endsAt: new Date(endsMs).toISOString(),
+    daysTotal,
+    daysRemaining,
+    active: daysRemaining > 0,
+    expired: daysRemaining <= 0,
+  };
+}
+
 export interface DayBuckets {
   label: string;
   minutes: number;

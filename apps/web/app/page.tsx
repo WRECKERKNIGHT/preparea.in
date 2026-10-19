@@ -1,3 +1,5 @@
+"use client";
+
 import { HeroScene } from "@/components/fx/hero-scene";
 import { TSerif, T, Button, Card } from "@/components/ui";
 
@@ -5,7 +7,9 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background">
       {/* Animated Hero Background */}
-      <HeroScene className="fixed inset-0 z-0 pointer-events-none" />
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <HeroScene />
+      </div>
 
       {/* Main Content */}
       <section className="relative z-10 pt-20 pb-16">

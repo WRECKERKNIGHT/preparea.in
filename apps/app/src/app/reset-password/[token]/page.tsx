@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
-import { router } from "expo-router";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { isEmail, normalizeEmail } from "@preparea/shared";
-import { api, saveSession, fetchMe } from "@/lib/api";
+import { api } from "@/lib/api";
 import { Btn, Card, Field, T, TSerif } from "@/components/ui";
 import { theme, spacing } from "@/constants/theme";
 
-export default function ResetPasswordScreen({ params }: { params: { token: string } }) {
+export default function ResetPasswordScreen() {
+  const { token } = useLocalSearchParams<{ token: string }>();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -27,7 +27,7 @@ export default function ResetPasswordScreen({ params }: { params: { token: strin
     }
 
     setBusy(true);
-    const res = await api<{ message: string }>(`/api/auth/reset-password/${params.token}`, {
+    const res = await api<{ message: string }>(`/api/auth/reset-password/${token}`, {
       method: "POST",
       body: { password, confirmPassword },
     });
@@ -84,3 +84,15 @@ export default function ResetPasswordScreen({ params }: { params: { token: strin
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: theme.paper },
+  content: { padding: spacing.lg, paddingTop: spacing.xl },
+  title: { fontSize: 28, marginBottom: spacing.sm, color: theme.ink },
+  sub: {
+    fontSize: 15,
+    color: theme.inkMuted,
+    marginBottom: spacing.lg,
+    lineHeight: 22,
+  },
+});

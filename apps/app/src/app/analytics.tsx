@@ -1,65 +1,75 @@
 import { useState, useEffect } from "react";
-import { View, Text, Button, FlatList, ActivityIndicator, Alert } from "react-native";
+import { View, Text, Button, ActivityIndicator, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { api, loadSession } from "@/lib/api";
-import { formatDate } from "@/lib/date-utils"; // We'll create this helper
 
 export default function AnalyticsScreen() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [analyticsData, setAnalyticsData] = useState<any>(null);
-  const [dateRange, setDateRange] = useState({
-    start: new Date(),
-    end: new Date(),
-  });
-
-  // Initialize with last 30 days
-  useEffect(() => {
+  const [reloadKey, setReloadKey] = useState(0);
+  const [dateRange] = useState(() => {
     const end = new Date();
     const start = new Date();
     start.setDate(end.getDate() - 29); // Last 30 days
-    setDateRange({ start, end });
-    loadAnalytics();
-  }, []);
+    return { start, end };
+  });
+
+  const retry = () => {
+    setError(null);
+    setLoading(true);
+    setReloadKey((k) => k + 1);
+  };
 
   useEffect(() => {
-    // We'll reload when date range changes
-    loadAnalytics();
-  }, [dateRange]);
+    let cancelled = false;
 
-  const loadAnalytics = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const session = await loadSession();
-      if (!session) {
-        throw new Error("No active session");
+    // Every setState below runs after the first await, so the effect body
+    // itself never triggers a synchronous cascading render.
+    (async () => {
+      try {
+        const session = await loadSession();
+        if (!session) {
+          throw new Error("No active session");
+        }
+
+        const startDate = dateRange.start.toISOString().split("T")[0];
+        const endDate = dateRange.end.toISOString().split("T")[0];
+
+        const response = await api(
+          `/api/analytics?startDate=${startDate}&endDate=${endDate}`,
+          {
+            method: "GET",
+            token: session.token,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            response.error?.message || "Failed to fetch analytics"
+          );
+        }
+
+        if (!cancelled) {
+          setAnalyticsData(response.data);
+          setError(null);
+        }
+      } catch (err) {
+        if (cancelled) return;
+        console.error("Analytics loading error:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load analytics"
+        );
+      } finally {
+        if (!cancelled) setLoading(false);
       }
+    })();
 
-      const startDate = dateRange.start.toISOString().split('T')[0];
-      const endDate = dateRange.end.toISOString().split('T')[0];
-
-      const response = await api(`/api/analytics?startDate=${startDate}&endDate=${endDate}`, {
-        method: "GET",
-        token: session.token,
-      });
-
-      if (!response.ok) {
-        throw new Error(response.error?.message || "Failed to fetch analytics");
-      }
-
-      setAnalyticsData(response.data);
-    } catch (err) {
-      console.error("Analytics loading error:", err);
-      setError(err.message || "Failed to load analytics");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDateRangeChange = (range: { start: Date; end: Date }) => {
-    setDateRange(range);
-  };
+    return () => {
+      cancelled = true;
+    };
+  }, [dateRange, reloadKey]);
 
   if (loading) {
     return (
@@ -81,7 +91,7 @@ export default function AnalyticsScreen() {
         <Button
           title="Try Again"
           color="#3b82f6"
-          onPress={loadAnalytics}
+          onPress={retry}
         />
       </View>
     );

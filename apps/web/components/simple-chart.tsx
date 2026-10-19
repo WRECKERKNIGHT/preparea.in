@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { format } from "date-fns";
 
 interface ChartDataPoint {
   date: string;
@@ -19,6 +18,24 @@ export default function SimpleChart({
   height = 200,
   formatter,
 }: SimpleChartProps) {
+  const chartData = useMemo(() => {
+    // Sort by date
+    return [...(data ?? [])].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+  }, [data]);
+
+  const maxValue = useMemo(() => {
+    if (chartData.length === 0) return 0;
+    return Math.max(...chartData.map((point) => point.value));
+  }, [chartData]);
+
+  const minValue = useMemo(() => {
+    if (chartData.length === 0) return 0;
+    return Math.min(...chartData.map((point) => point.value));
+  }, [chartData]);
+
+  // Early return lives after every hook so hook order stays stable.
   if (!data || data.length === 0) {
     return (
       <div className="h-[200px] flex items-center justify-center text-muted-foreground">
@@ -26,19 +43,6 @@ export default function SimpleChart({
       </div>
     );
   }
-
-  const chartData = useMemo(() => {
-    // Sort by date
-    return [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [data]);
-
-  const maxValue = useMemo(() => {
-    return Math.max(...chartData.map(point => point.value));
-  }, [chartData]);
-
-  const minValue = useMemo(() => {
-    return Math.min(...chartData.map(point => point.value));
-  }, [chartData]);
 
   const valueRange = maxValue - minValue || 1; // Avoid division by zero
   const adjustedMin = minValue - valueRange * 0.1; // Add 10% padding below
@@ -52,6 +56,7 @@ export default function SimpleChart({
 
   // Create scales
   const xScale = (index: number) => {
+    if (chartData.length <= 1) return padding.left + chartWidth / 2;
     return padding.left + (index / (chartData.length - 1)) * chartWidth;
   };
 
@@ -61,7 +66,9 @@ export default function SimpleChart({
 
   // Format date for x-axis labels
   const formatDate = (dateString: string) => {
-    return format(new Date(dateString), "MMM d");
+    const d = new Date(`${dateString}T00:00:00`);
+    if (Number.isNaN(d.getTime())) return dateString;
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
   };
 
   return (

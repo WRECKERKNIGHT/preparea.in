@@ -1,5 +1,4 @@
-import { StudyTimer } from "@/components/study-timer";
-import { TSerif, T } from "@/components/ui";
+import StudyTimer from "@/components/study-timer";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

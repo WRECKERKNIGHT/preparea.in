@@ -1,21 +1,24 @@
 import { useState } from "react";
-import { View, Text, Button, TextInput, Alert, ActivityIndicator, FlatList } from "react-native";
+import { View, Text, Button, TextInput, Alert, TouchableOpacity } from "react-native";
 import { useStudyTimer } from "@/lib/use-study-timer";
 import { useRouter } from "expo-router";
-import { Rooms } from "@/components/fx/hero-scene"; // Reuse room selection
+
+const Rooms = {
+  "room-morning": { name: "Morning Room", day: "Daily", time: "5:00 – 9:00 AM" },
+  "room-afternoon": { name: "Afternoon Room", day: "Daily", time: "12:00 – 4:00 PM" },
+  "room-evening": { name: "Evening Room", day: "Daily", time: "5:00 – 9:00 PM" },
+  "room-night": { name: "Night Room", day: "Daily", time: "9:00 PM – 1:00 AM" },
+} as const;
 
 export default function StudyTimerScreen() {
   const {
     isRunning,
-    elapsedSeconds,
     rawElapsedSeconds,
-    roomId,
     note,
     setNote,
     startTimer,
     stopTimer,
-    resetTimer,
-    saveStudyLog
+    resetTimer
   } = useStudyTimer();
 
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
@@ -33,8 +36,7 @@ export default function StudyTimerScreen() {
   const handleStop = async () => {
     setIsSaving(true);
     try {
-      await stopTimer();
-      await saveStudyLog();
+      await stopTimer(); // stopTimer persists the session
       router.replace("/(tabs)"); // Redirect to main tabs after stopping
     } catch (error) {
       console.error("Error saving study log:", error);
@@ -142,8 +144,9 @@ export default function StudyTimerScreen() {
           const room = Rooms[roomKey as keyof typeof Rooms];
           const isSelected = selectedRoom === roomKey;
           return (
-            <View
+            <TouchableOpacity
               key={roomKey}
+              onPress={() => setSelectedRoom(roomKey)}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
@@ -154,7 +157,6 @@ export default function StudyTimerScreen() {
                 borderWidth: isSelected ? 2 : 0,
                 borderColor: isSelected ? "#3b82f6" : "transparent",
               }}
-              onPress={() => setSelectedRoom(roomKey)}
             >
               <View style={{
                 width: 20,
@@ -177,7 +179,7 @@ export default function StudyTimerScreen() {
                   {room.day} • {room.time}
                 </Text>
               </View>
-            </View>
+            </TouchableOpacity>
           );
         })}
       </View>
@@ -192,8 +194,8 @@ export default function StudyTimerScreen() {
           value={note}
           onChangeText={setNote}
           multiline
-          minHeight={80}
           style={{
+            minHeight: 80,
             borderWidth: 1,
             borderColor: "#e5e7eb",
             borderRadius: 8,

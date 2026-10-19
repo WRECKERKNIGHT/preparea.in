@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { nanoid } from "nanoid";
 import type {
   Student,
@@ -21,10 +20,6 @@ import { openSqlStore } from "@/lib/sql-store";
 import { buildDashboard } from "@/lib/aggregate";
 import { dayKey, todayKey } from "@/lib/dates";
 import { verifyPassword } from "./password";
-
-function hash(s: string): string {
-  return createHash("sha256").update(s).digest("hex");
-}
 
 // ---------------------------------------------------------------------------
 // Mock store (in-memory, deterministic seed) — runs with zero configuration.

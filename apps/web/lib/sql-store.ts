@@ -20,6 +20,7 @@ import type { Store } from "@/lib/store";
 import { buildDashboard } from "@/lib/aggregate";
 import { createDb, migrate, resolveDbConfig, type DbConfig } from "@/lib/db";
 import { dayKey, todayKey } from "@/lib/dates";
+import { verifyPassword } from "@/lib/password";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
@@ -229,6 +230,9 @@ export class SqlStore implements Store {
     "dailyTargetMin",
     "mainChallenge",
     "status",
+    // Password reset updates the hash through this same path.
+    "passwordHash",
+    "tokenVersion",
   ]);
 
   async updateStudent(id: string, patch: Partial<Student>) {

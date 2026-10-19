@@ -2,24 +2,27 @@ import * as React from "react";
 
 interface TextProps extends React.HTMLAttributes<HTMLElement> {
   /**
-   * Change the default rendered element for the one passed as a child, merging their props and behavior.
-   * @defaultValue "span"
+   * When true, the element is dropped and children render unwrapped, so a
+   * caller can pass a single child through as the rendered node.
+   * @defaultValue false
    */
   asChild?: boolean;
 }
 
-const Text = React.forwardRef<HTMLElement, TextProps>((props, ref) => {
-  const { asChild = true, ...textProps } = props;
+const T = React.forwardRef<HTMLElement, TextProps>((props, ref) => {
+  const { asChild = false, children, ...textProps } = props;
 
-  const Compose = asChild ? React.Fragment : "span";
+  if (asChild) {
+    return <>{children}</>;
+  }
 
   return (
-    <Compose
-      ref={ref}
-      {...textProps}
-    />
+    <span ref={ref} {...textProps}>
+      {children}
+    </span>
   );
 });
-Text.displayName = "Text";
+T.displayName = "T";
 
-export { Text };
+export { T };
+export { T as Text };
