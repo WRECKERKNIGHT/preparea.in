@@ -1,54 +1,22 @@
 "use client";
 
-import { HeroScene } from "@/components/fx/hero-scene";
 import { TSerif, T, Button } from "@/components/ui";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="fixed inset-0 z-0">
-        <HeroScene />
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/50 to-slate-900" />
-      </div>
-
-      {/* Floating Orbs */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute top-40 right-20 w-96 h-96 bg-blue-500/15 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-pink-500/20 rounded-full blur-3xl animate-pulse delay-2000" />
-      </div>
-
-      {/* Navigation */}
-      <nav className="relative z-20 border-b border-white/10 backdrop-blur-xl bg-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <TSerif className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              PrepArea
-            </TSerif>
-            <div className="flex gap-4">
-              <Button variant="ghost" onClick={() => window.location.href = "/login"}>
-                Log In
-              </Button>
-              <Button variant="primary" onClick={() => window.location.href = "/register"}>
-                Get Started
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
+    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Hero Section */}
-      <section className="relative z-10 pt-20 pb-32 px-4">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="inline-block mb-6 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20">
+      <section className="relative pt-32 pb-24 px-4 overflow-hidden">
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          {/* Badge */}
+          <div className="inline-block mb-8 px-6 py-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20">
             <T className="text-purple-300 text-sm font-medium">
               🎯 Trusted by 10,000+ aspirants across India
             </T>
           </div>
 
-          <TSerif className="text-6xl md:text-8xl font-bold mb-8 leading-tight">
+          {/* Main Heading */}
+          <TSerif className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight">
             <span className="bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">
               Study Smarter,
             </span>
@@ -58,17 +26,19 @@ export default function Home() {
             </span>
           </TSerif>
 
-          <T className="text-xl text-slate-300 mb-12 max-w-2xl mx-auto leading-relaxed">
+          {/* Subheading */}
+          <T className="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed">
             The all-in-one study platform for JEE, NEET, and board exam aspirants.
             Track your progress, join live sessions, and achieve your dream rank.
           </T>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20">
             <Button
               variant="primary"
               size="lg"
               onClick={() => { window.location.href = "/register"; }}
-              className="px-8 py-4 text-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/25"
+              className="px-10 py-5 text-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-xl shadow-purple-500/25"
             >
               Start Free Trial →
             </Button>
@@ -76,33 +46,37 @@ export default function Home() {
               variant="outline"
               size="lg"
               onClick={() => { window.location.href = "/login"; }}
-              className="px-8 py-4 text-lg bg-white/5 backdrop-blur-md border-white/20 hover:bg-white/10"
+              className="px-10 py-5 text-lg bg-white/5 backdrop-blur-md border-white/20 hover:bg-white/10"
             >
               Watch Demo
             </Button>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+          {/* Stats Section */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
             {[
               { label: "Active Students", value: "10K+" },
               { label: "Study Hours", value: "500K+" },
               { label: "Success Rate", value: "94%" },
               { label: "Mentors", value: "150+" },
             ].map((stat) => (
-              <div key={stat.label} className="text-center">
+              <div key={stat.label} className="text-center p-6 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10">
                 <TSerif className="text-3xl md:text-4xl font-bold text-white mb-2">
                   {stat.value}
                 </TSerif>
-                <T className="text-slate-400 text-sm">{stat.label}</T>
+                <T className="text-slate-400 text-sm font-medium">{stat.label}</T>
               </div>
             ))}
           </div>
         </div>
+
+        {/* Background Gradient Orbs */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl pointer-events-none" />
       </section>
 
       {/* Features Section */}
-      <section className="relative z-10 py-24 px-4">
+      <section className="relative py-24 px-4 bg-white/5">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <T className="text-purple-400 text-sm font-semibold uppercase tracking-wider mb-4">
@@ -116,7 +90,7 @@ export default function Home() {
             </T>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
                 icon: "⏱️",
@@ -178,8 +152,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="relative z-10 py-24 px-4">
+      {/* How It Works Section */}
+      <section className="relative py-24 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <T className="text-purple-400 text-sm font-semibold uppercase tracking-wider mb-4">
@@ -195,25 +169,17 @@ export default function Home() {
               { step: "1", title: "Create Account", desc: "Sign up with your email and set a secure password" },
               { step: "2", title: "Set Your Goals", desc: "Choose your exam, class, and daily study target" },
               { step: "3", title: "Start Studying", desc: "Use timers, join rooms, and track your progress" },
-            ].map((item, idx) => (
-              <div key={item.step} className="relative">
-                <div className="absolute -inset-4 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="relative p-8 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 transition-colors">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xl mb-6">
-                    {item.step}
-                  </div>
-                  <TSerif className="text-2xl font-bold text-white mb-3">
-                    {item.title}
-                  </TSerif>
-                  <T className="text-slate-400">
-                    {item.desc}
-                  </T>
+            ].map((item) => (
+              <div key={item.step} className="relative p-8 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 transition-colors">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-2xl mb-6">
+                  {item.step}
                 </div>
-                {idx < 2 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 text-purple-400 text-2xl">
-                    →
-                  </div>
-                )}
+                <TSerif className="text-2xl font-bold text-white mb-3">
+                  {item.title}
+                </TSerif>
+                <T className="text-slate-400">
+                  {item.desc}
+                </T>
               </div>
             ))}
           </div>
@@ -221,64 +187,41 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative z-10 py-24 px-4">
+      <section className="relative py-24 px-4">
         <div className="max-w-4xl mx-auto">
-          <div className="relative rounded-3xl overflow-hidden">
-            {/* Background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600" />
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.05%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50" />
-
-            <div className="relative px-8 py-16 md:px-16 md:py-20 text-center">
-              <TSerif className="text-3xl md:text-5xl font-bold text-white mb-6">
-                Ready to Transform Your
-                <br />
-                Preparation?
-              </TSerif>
-              <T className="text-purple-100 text-lg mb-10 max-w-2xl mx-auto">
-                Join thousands of aspirants who are already achieving their dreams with PrepArea
-              </T>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={() => { window.location.href = "/register"; }}
-                  className="px-8 py-4 text-lg bg-white text-purple-600 hover:bg-purple-50 font-semibold shadow-xl"
-                >
-                  Start Free Trial
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => { window.location.href = "/login"; }}
-                  className="px-8 py-4 text-lg bg-transparent border-2 border-white text-white hover:bg-white/10"
-                >
-                  Login
-                </Button>
-              </div>
-              <T className="text-purple-200 text-sm mt-8">
-                No credit card required • Cancel anytime • Free 7-day trial
-              </T>
+          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 p-12 md:p-20 text-center">
+            <TSerif className="text-3xl md:text-5xl font-bold text-white mb-6">
+              Ready to Transform Your
+              <br />
+              Preparation?
+            </TSerif>
+            <T className="text-purple-100 text-lg mb-10 max-w-2xl mx-auto">
+              Join thousands of aspirants who are already achieving their dreams with PrepArea
+            </T>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={() => { window.location.href = "/register"; }}
+                className="px-10 py-5 text-lg bg-white text-purple-600 hover:bg-purple-50 font-semibold shadow-xl"
+              >
+                Start Free Trial
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => { window.location.href = "/login"; }}
+                className="px-10 py-5 text-lg bg-transparent border-2 border-white text-white hover:bg-white/10"
+              >
+                Login
+              </Button>
             </div>
+            <T className="text-purple-200 text-sm mt-8">
+              No credit card required • Cancel anytime • Free 7-day trial
+            </T>
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-white/10 py-12 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <TSerif className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-            PrepArea
-          </TSerif>
-          <T className="text-slate-500 text-sm">
-            © 2026 PrepArea. All rights reserved. Not a coaching platform.
-          </T>
-          <div className="flex gap-6">
-            <a href="#" className="text-slate-400 hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="text-slate-400 hover:text-white transition-colors">Terms</a>
-            <a href="#" className="text-slate-400 hover:text-white transition-colors">Contact</a>
-          </div>
-        </div>
-      </footer>
     </main>
   );
 }
