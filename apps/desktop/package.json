@@ -1,0 +1,46 @@
+{
+  "name": "preparea-desktop",
+  "version": "1.0.0",
+  "description": "PrepArea Desktop - Study community for competitive exam aspirants",
+  "main": "src/main.js",
+  "author": "PrepArea",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win --x64",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "build": "npm run build:win"
+  },
+  "devDependencies": {
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.preparea.app",
+    "productName": "PrepArea",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "PrepArea"
+    }
+  }
+}
