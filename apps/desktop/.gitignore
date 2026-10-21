@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.exe
+*.dll
+*.pak
+*.dat
+*.bin
+*.zip
+build/
