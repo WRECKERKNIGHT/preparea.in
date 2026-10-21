@@ -34,3 +34,6 @@ Thumbs.db
 
 # vercel
 .vercel/
+# Electron binaries - too large for GitHub
+apps/desktop/resources/
+apps/desktop/node_modules/
