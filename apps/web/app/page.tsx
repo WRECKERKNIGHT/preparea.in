@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { Star, ArrowRight, Play, ChevronDown, Clock, TrendingUp, Users, Shield, BookOpen, BarChart3, CheckCircle2, Zap } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { HeroScene3D } from "@/components/hero-scene-3d";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -379,9 +380,8 @@ function CTASection() {
 export default function Home() {
   return (
     <main className="relative min-h-screen bg-paper overflow-x-hidden">
-      <BackgroundOrbs />
       <TrustBar />
-      <HeroSection />
+      <HeroScene3D />
       <div className="dotted-light h-px w-full max-w-4xl mx-auto" aria-hidden="true" />
       <FeaturesSection />
       <HowItWorksSection />

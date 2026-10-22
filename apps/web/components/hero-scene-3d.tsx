@@ -1,8 +1,10 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
+import Link from "next/link";
+import { Star, ArrowRight, Play, ChevronDown } from "lucide-react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -25,7 +27,6 @@ function StudyDesk({ scrollProgress }: { scrollProgress: number }) {
   const glassesRef = useRef<THREE.Group>(null);
 
   useFrame(() => {
-    // Smooth scroll-based animations
     const p = scrollProgress;
 
     // Table - subtle rotation
@@ -89,7 +90,7 @@ function StudyDesk({ scrollProgress }: { scrollProgress: number }) {
 
   return (
     <group ref={tableRef}>
-      {/* ═══ TABLE ═══ */}
+      {/* TABLE */}
       <mesh position={[0, -0.5, 0]} receiveShadow>
         <boxGeometry args={[8, 0.15, 5]} />
         <meshStandardMaterial color="#8B6914" roughness={0.6} metalness={0.1} />
@@ -112,65 +113,56 @@ function StudyDesk({ scrollProgress }: { scrollProgress: number }) {
         <meshStandardMaterial color="#7A5C12" />
       </mesh>
 
-      {/* ═══ LAPTOP ═══ */}
+      {/* LAPTOP */}
       <group ref={laptopRef} position={[-1.5, 0.5, 0]}>
-        {/* Screen */}
         <mesh position={[0, 0.5, -0.4]} castShadow>
           <boxGeometry args={[1.8, 1.2, 0.05]} />
           <meshStandardMaterial color="#1a1a2e" roughness={0.2} metalness={0.8} />
         </mesh>
-        {/* Screen display */}
         <mesh position={[0, 0.5, -0.37]} castShadow>
           <planeGeometry args={[1.7, 1.1]} />
           <meshStandardMaterial color="#4CAF50" emissive="#2E7D32" emissiveIntensity={0.3} />
         </mesh>
-        {/* Keyboard base */}
         <mesh position={[0, 0, 0]} castShadow>
           <boxGeometry args={[1.8, 0.05, 1.2]} />
           <meshStandardMaterial color="#2d2d2d" roughness={0.3} metalness={0.6} />
         </mesh>
-        {/* Trackpad */}
         <mesh position={[0, 0.03, 0.3]} castShadow>
           <boxGeometry args={[0.6, 0.02, 0.4]} />
           <meshStandardMaterial color="#3d3d3d" roughness={0.2} metalness={0.5} />
         </mesh>
       </group>
 
-      {/* ═══ PHONE ═══ */}
+      {/* PHONE */}
       <group ref={phoneRef} position={[1.2, 0.2, 0.5]}>
         <mesh castShadow>
           <boxGeometry args={[0.4, 0.8, 0.05]} />
           <meshStandardMaterial color="#1a1a1a" roughness={0.1} metalness={0.9} />
         </mesh>
-        {/* Screen */}
         <mesh position={[0, 0, 0.03]}>
           <planeGeometry args={[0.35, 0.7]} />
           <meshStandardMaterial color="#2196F3" emissive="#1565C0" emissiveIntensity={0.2} />
         </mesh>
       </group>
 
-      {/* ═══ STUDY LAMP ═══ */}
+      {/* STUDY LAMP */}
       <group ref={lampRef} position={[2.2, 0.5, -0.8]}>
-        {/* Base */}
         <mesh position={[0, 0, 0]} castShadow>
           <cylinderGeometry args={[0.3, 0.35, 0.1, 32]} />
           <meshStandardMaterial color="#FFD700" metalness={0.8} roughness={0.2} />
         </mesh>
-        {/* Arm */}
         <mesh position={[0, 0.5, 0]} castShadow>
           <cylinderGeometry args={[0.03, 0.03, 0.8, 8]} />
           <meshStandardMaterial color="#FFA500" metalness={0.6} roughness={0.3} />
         </mesh>
-        {/* Lamp shade */}
         <mesh position={[0, 1, 0]} castShadow>
           <coneGeometry args={[0.4, 0.3, 32]} />
           <meshStandardMaterial color="#FFEB3B" transparent opacity={0.9} emissive="#FFD54F" emissiveIntensity={0.5} />
         </mesh>
-        {/* Light */}
         <pointLight position={[0, 0.8, 0]} color="#FFD700" intensity={2} distance={8} castShadow />
       </group>
 
-      {/* ═══ BOOKS ═══ */}
+      {/* BOOKS */}
       <group ref={booksRef} position={[-1.8, 0.1, 0.8]}>
         {[
           { color: "#FF6B6B", y: 0.05 },
@@ -184,7 +176,7 @@ function StudyDesk({ scrollProgress }: { scrollProgress: number }) {
         ))}
       </group>
 
-      {/* ═══ PENS ═══ */}
+      {/* PENS */}
       <group ref={pensRef} position={[1.5, 0.05, 0.8]}>
         {[
           { color: "#E74C3C", rot: 0.1 },
@@ -198,37 +190,32 @@ function StudyDesk({ scrollProgress }: { scrollProgress: number }) {
         ))}
       </group>
 
-      {/* ═══ COFFEE CUP ═══ */}
+      {/* COFFEE CUP */}
       <group ref={cupRef} position={[2.2, 0.15, 0.5]}>
         <mesh castShadow>
           <cylinderGeometry args={[0.15, 0.12, 0.25, 16]} />
           <meshStandardMaterial color="#FFFFFF" roughness={0.3} />
         </mesh>
-        {/* Handle */}
         <mesh position={[0.15, 0, 0]} castShadow>
           <torusGeometry args={[0.06, 0.015, 8, 16, Math.PI]} />
           <meshStandardMaterial color="#FFFFFF" roughness={0.3} />
         </mesh>
       </group>
 
-      {/* ═══ GLASSES ═══ */}
+      {/* GLASSES */}
       <group ref={glassesRef} position={[-0.5, 0.1, 1]}>
-        {/* Left lens */}
         <mesh castShadow>
           <torusGeometry args={[0.12, 0.015, 8, 24]} />
           <meshStandardMaterial color="#333333" metalness={0.8} roughness={0.2} />
         </mesh>
-        {/* Right lens */}
         <mesh position={[0.3, 0, 0]} castShadow>
           <torusGeometry args={[0.12, 0.015, 8, 24]} />
           <meshStandardMaterial color="#333333" metalness={0.8} roughness={0.2} />
         </mesh>
-        {/* Bridge */}
         <mesh position={[0.15, 0.05, 0]}>
           <boxGeometry args={[0.1, 0.01, 0.01]} />
           <meshStandardMaterial color="#333333" metalness={0.8} roughness={0.2} />
         </mesh>
-        {/* Arms */}
         <mesh position={[-0.12, 0, 0]} rotation={[0, 0, 0.3]}>
           <boxGeometry args={[0.15, 0.01, 0.01]} />
           <meshStandardMaterial color="#333333" metalness={0.8} roughness={0.2} />
@@ -246,6 +233,16 @@ function StudyDesk({ scrollProgress }: { scrollProgress: number }) {
    3D SCENE COMPONENT
    ══════════════════════════════════════════════════════════════════ */
 function Scene3D({ onScrollProgress }: { onScrollProgress: (progress: number) => void }) {
+  const [, setProgress] = useState(0);
+
+  useEffect(() => {
+    // Simple interval to simulate scroll progress for demo
+    const interval = setInterval(() => {
+      setProgress(p => p >= 1 ? 0 : p + 0.01);
+    }, 50);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <Canvas
       shadows
@@ -253,39 +250,26 @@ function Scene3D({ onScrollProgress }: { onScrollProgress: (progress: number) =>
       gl={{ antialias: true, alpha: false }}
       dpr={[1, 2]}
     >
-      {/* Lighting */}
       <ambientLight intensity={0.4} color="#FFF8E7" />
       <directionalLight
         position={[5, 10, 5]}
         intensity={1.2}
         color="#FFE4B5"
         castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
       />
       <pointLight position={[-5, 5, -5]} intensity={0.5} color="#9370DB" />
-      <spotLight
-        position={[0, 8, 0]}
-        angle={0.5}
-        penumbra={0.5}
-        intensity={0.8}
-        castShadow
-      />
+      <spotLight position={[0, 8, 0]} angle={0.5} penumbra={0.5} intensity={0.8} castShadow />
 
-      {/* Environment */}
       <color attach="background" args={["#171536"]} />
       <fog attach="fog" args={["#171536", 10, 25]} />
 
-      {/* Ground plane */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2, 0]} receiveShadow>
         <planeGeometry args={[50, 50]} />
         <meshStandardMaterial color="#0f0d24" roughness={0.8} />
       </mesh>
 
-      {/* Study Desk */}
-      <StudyDesk scrollProgress={0} />
+      <StudyDesk scrollProgress={0.5} />
 
-      {/* Controls - disabled during animation */}
       <OrbitControls
         enableZoom={false}
         enablePan={false}
@@ -301,32 +285,11 @@ function Scene3D({ onScrollProgress }: { onScrollProgress: (progress: number) =>
    HERO SECTION WITH 3D
    ══════════════════════════════════════════════════════════════════ */
 export function HeroScene3D() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [, setScrollProgress] = useState(0);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const scrollTrigger = ScrollTrigger.create({
-      trigger: containerRef.current,
-      start: "top bottom",
-      end: "bottom top",
-      scrub: 0.5,
-      onUpdate: (self) => {
-        setScrollProgress(self.progress);
-      },
-    });
-
-    return () => {
-      scrollTrigger.kill();
-    };
-  }, []);
-
   return (
-    <div ref={containerRef} className="relative w-full h-screen overflow-hidden bg-[#171536]">
+    <div className="relative w-full h-screen overflow-hidden bg-[#171536]">
       {/* 3D Canvas */}
       <div className="absolute inset-0">
-        <Scene3D onScrollProgress={setScrollProgress} />
+        <Scene3D onScrollProgress={() => {}} />
       </div>
 
       {/* Gradient Overlay */}
@@ -408,8 +371,3 @@ export function HeroScene3D() {
     </div>
   );
 }
-
-// Required imports
-import { Star, ArrowRight, Play, ChevronDown } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
