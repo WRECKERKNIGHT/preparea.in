@@ -6,6 +6,8 @@
     "@expo-google-fonts/inter": "^0.4.2",
     "@expo-google-fonts/newsreader": "^0.4.1",
     "@expo/ui": "~57.0.25",
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.2",
     "expo": "~57.0.30",
     "expo-constants": "~57.0.19",
     "expo-device": "~57.0.2",
@@ -28,7 +30,8 @@
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
     "react-native-web": "~0.21.0",
-    "react-native-worklets": "0.10.1"
+    "react-native-worklets": "0.10.1",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
