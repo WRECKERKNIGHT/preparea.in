@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+"use client";
 import { CheckCircle2, Clock, Users, Video, Star, Shield, Zap, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { TSerif } from "@/components/ui/text-serif";
@@ -11,11 +11,6 @@ import { useEffect, useRef } from "react";
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
-
-export const metadata: Metadata = {
-  title: "FAQ — PrepArea",
-  description: "Frequently asked questions about PrepArea.",
-};
 
 const faqs = [
   {
@@ -224,7 +219,7 @@ export default function FaqPage() {
                 <Link href="/register">
                   <span className="clay-btn clay-btn-gold px-8 py-4 text-base font-black inline-flex items-center gap-2 shadow-clay-lg glow-gold hover:scale-105 transition-transform duration-200">
                     Join PrepArea
-                    <ArrowRight className="size-5" />
+                    <Users className="size-5" />
                   </span>
                 </Link>
               </Magnetic>
@@ -235,5 +230,3 @@ export default function FaqPage() {
     </>
   );
 }
-
-import { ArrowRight } from "lucide-react";

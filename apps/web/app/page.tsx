@@ -1,11 +1,45 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Star, ArrowRight, Play, ChevronDown, Clock, TrendingUp, Users, Shield, BookOpen, BarChart3, CheckCircle2, Zap } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { HeroScene3D } from "@/components/hero-scene-3d";
+
+function HeroFallback() {
+  return (
+    <div className="relative w-full h-screen overflow-hidden bg-[#171536] flex items-center justify-center">
+      <div className="text-center">
+        <div className="text-6xl md:text-8xl font-black text-white mb-6" style={{ fontFamily: "var(--font-fraunces)" }}>
+          Study Smarter,{" "}
+          <span className="text-transparent bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text" style={{ fontFamily: "var(--font-fraunces)" }}>
+            Not Harder
+          </span>
+        </div>
+        <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-12 leading-relaxed">
+          The all-in-one study community for JEE, NEET, and board exam aspirants.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link href="/register">
+            <span className="inline-flex items-center gap-2 px-10 py-5 bg-gradient-to-r from-yellow-500 to-amber-500 text-yellow-950 font-black text-base rounded-full shadow-lg hover:scale-105 transition-transform duration-200">
+              Start Free Trial
+              <ArrowRight className="size-5" />
+            </span>
+          </Link>
+          <Link href="/tour">
+            <span className="inline-flex items-center gap-2 px-10 py-5 bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold text-base rounded-full hover:bg-white/20 transition-all duration-200">
+              <Play className="size-4" />
+              Watch Demo
+            </span>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const HeroScene3D = dynamic(() => import("@/components/hero-scene-3d").then(mod => ({ default: mod.HeroScene3D })), { ssr: false, loading: () => <HeroFallback /> });
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);

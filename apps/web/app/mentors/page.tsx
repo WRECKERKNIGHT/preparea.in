@@ -1,5 +1,18 @@
-import type { Metadata } from "next";
-import { Mic, ShieldCheck, NotebookPen, Video, Users, Clock } from "lucide-react";
+﻿"use client";
+import {
+  CalendarCheck,
+  Clock,
+  LineChart,
+  MessagesSquare,
+  Mic,
+  NotebookPen,
+  ShieldCheck,
+  Target,
+  Users,
+  Video,
+  Zap,
+  TrendingUp,
+} from "lucide-react";
 import Link from "next/link";
 import { TSerif } from "@/components/ui/text-serif";
 import { T } from "@/components/ui/text";
@@ -11,11 +24,6 @@ import { useEffect, useRef } from "react";
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
-
-export const metadata: Metadata = {
-  title: "Mentors — PrepArea",
-  description: "Practical guidance from experienced aspirants.",
-};
 
 const topics = [
   "How I planned my preparation for the full year",

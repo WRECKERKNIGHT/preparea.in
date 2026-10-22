@@ -1,15 +1,19 @@
-import type { Metadata } from "next";
+﻿"use client";
 import {
+  ArrowRight,
   CalendarCheck,
+  CheckCircle2,
   Clock,
   LineChart,
-  MessagesSquare,
   Mic,
+  MessagesSquare,
   ShieldCheck,
   Target,
-  Users,
-  Zap,
   TrendingUp,
+  Users,
+  Video,
+  Star,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { TSerif } from "@/components/ui/text-serif";
@@ -22,11 +26,6 @@ import { useEffect, useRef } from "react";
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
-
-export const metadata: Metadata = {
-  title: "Features — PrepArea",
-  description: "Everything PrepArea includes in the MVP.",
-};
 
 const features = [
   {
@@ -218,5 +217,3 @@ export default function FeaturesPage() {
     </>
   );
 }
-
-import { ArrowRight } from "lucide-react";

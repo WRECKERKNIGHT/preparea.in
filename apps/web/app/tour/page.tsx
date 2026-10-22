@@ -1,13 +1,13 @@
-import type { Metadata } from "next";
+﻿"use client";
 import {
-  ArrowRight,
-  CheckCircle2,
-  Clock,
-  Users,
   Video,
+  Clock,
+  TrendingUp,
+  Users,
   Star,
   Zap,
-  TrendingUp,
+  CheckCircle2,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 import { TSerif } from "@/components/ui/text-serif";
@@ -20,11 +20,6 @@ import { useEffect, useRef } from "react";
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
-
-export const metadata: Metadata = {
-  title: "Tour — PrepArea",
-  description: "Take a guided tour of PrepArea.",
-};
 
 const tourSteps = [
   {
