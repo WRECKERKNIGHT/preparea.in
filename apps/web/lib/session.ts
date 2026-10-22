@@ -9,8 +9,8 @@ const secret = new TextEncoder().encode(
 export interface SessionPayload {
   sub: string;
   email: string;
-  iat: number;
-  exp: number;
+  iat?: number;
+  exp?: number;
 }
 
 /**
