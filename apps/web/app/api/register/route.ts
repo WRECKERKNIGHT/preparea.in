@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
       klass,
       exam,
       email,
+      password,
       passwordHash: await hashPassword(password),
       dailyTargetMin,
       source,
