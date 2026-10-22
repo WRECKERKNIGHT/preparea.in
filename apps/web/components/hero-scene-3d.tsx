@@ -283,4 +283,4 @@ export function HeroScene3D() {
 
 // Import statements needed
 import { Star, ArrowRight, Play, ChevronDown } from "lucide-react";
-import { Link } from "next/link";
+import Link from "next/link";
