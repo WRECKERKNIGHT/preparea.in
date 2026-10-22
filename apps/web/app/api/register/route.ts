@@ -1,51 +1,90 @@
-import { ok, err, readJson } from "@/lib/api";
+import { NextRequest } from "next/server";
+import { ok, err, readJson, sanitizeInput, getSession, checkRateLimit } from "@/lib/api";
 import { getStore } from "@/lib/store";
 import type { RegisterInput } from "@preparea/shared";
-import { hashPassword, validatePassword } from "@/lib/password";
+import { hashPassword, validatePassword, validateEmail } from "@/lib/password";
 
-export async function POST(req: Request) {
+const IP_RATE_LIMIT_WINDOW = 10 * 60 * 1000; // 10 minutes per IP
+
+export async function POST(req: NextRequest) {
+  // Rate limiting by IP
+  const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  if (!checkRateLimit(`register_${clientIp}`)) {
+    return err("rate_limit_exceeded", "Too many registration attempts. Please try again later.", 429);
+  }
+
   const body = await readJson(req);
 
-  const input: RegisterInput = {
-    name: String(body.name ?? ""),
-    klass: String(body.klass ?? ""),
-    exam: String(body.exam ?? ""),
-    email: String(body.email ?? ""),
-    password: String(body.password ?? ""),
-    confirmPassword: String(body.confirmPassword ?? ""),
-    tgUsername: body.tgUsername
-      ? String(body.tgUsername)
-      : undefined,
-    discordUsername: body.discordUsername
-      ? String(body.discordUsername)
-      : undefined,
-    dailyTargetMin: Number(body.dailyTargetMin ?? 300),
-    mainChallenge: body.mainChallenge ? String(body.mainChallenge) : undefined,
-    source: String(body.source ?? "website"),
-  };
+  const name = sanitizeInput(String(body.name ?? ""));
+  const klass = sanitizeInput(String(body.klass ?? ""));
+  const exam = sanitizeInput(String(body.exam ?? ""));
+  const email = String(body.email ?? "").trim().toLowerCase();
+  const password = String(body.password ?? "");
+  const confirmPassword = String(body.confirmPassword ?? "");
+  const dailyTargetMin = Number(body.dailyTargetMin ?? 300);
+  const source = sanitizeInput(String(body.source ?? "website"));
+
+  // Validate email
+  const emailError = validateEmail(email);
+  if (emailError) {
+    return err("invalid_email", emailError, 400);
+  }
+
+  // Validate name
+  if (name.length < 2 || name.length > 50) {
+    return err("invalid_name", "Name must be between 2 and 50 characters.", 400);
+  }
 
   // Validate password
-  const passwordError = validatePassword(input.password);
+  const passwordError = validatePassword(password);
   if (passwordError) {
     return err("invalid_password", passwordError, 400);
   }
 
-  if (input.password !== input.confirmPassword) {
+  if (password !== confirmPassword) {
     return err("password_mismatch", "Passwords do not match.", 400);
   }
 
+  // Validate exam and class
+  const validExams = ["JEE", "NEET", "CUET", "Boards", "Other"];
+  const validClasses = ["8", "9", "10", "11", "12", "Graduate", "Dropper", "Other"];
+  if (!validExams.includes(exam)) {
+    return err("invalid_exam", "Please select a valid exam type.", 400);
+  }
+  if (!validClasses.includes(klass)) {
+    return err("invalid_class", "Please select a valid class.", 400);
+  }
+
+  // Rate limit by email to prevent duplicate registrations
+  const store = await getStore();
+  const existingStudent = await store.findStudentByEmail(email);
+  if (existingStudent) {
+    return err("already_registered", "An account with this email already exists.", 409);
+  }
+
   try {
-    const store = await getStore();
     const student = await store.registerStudent({
-      ...input,
-      passwordHash: await hashPassword(input.password),
+      name,
+      klass,
+      exam,
+      email,
+      passwordHash: await hashPassword(password),
+      dailyTargetMin,
+      source,
     });
-    return ok({ id: student.id, email: student.email });
+
+    return ok({
+      id: student.id,
+      email: student.email,
+      name: student.name,
+    });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Registration failed.";
-    if ((e as Error).message?.includes("already registered")) {
-      return err("already_registered", message, 409);
-    }
-    return err("invalid_input", message, 400);
+    console.error("Registration error:", e);
+    return err("registration_failed", message, 500);
   }
+}
+
+export async function GET() {
+  return err("method_not_allowed", "POST method only", 405);
 }
