@@ -4,10 +4,7 @@ import { getStore } from "@/lib/store";
 import type { RegisterInput } from "@preparea/shared";
 import { hashPassword, validatePassword, validateEmail } from "@/lib/password";
 
-const IP_RATE_LIMIT_WINDOW = 10 * 60 * 1000; // 10 minutes per IP
-
 export async function POST(req: NextRequest) {
-  // Rate limiting by IP
   const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (!checkRateLimit(`register_${clientIp}`)) {
     return err("rate_limit_exceeded", "Too many registration attempts. Please try again later.", 429);
@@ -47,7 +44,7 @@ export async function POST(req: NextRequest) {
 
   // Validate exam and class
   const validExams = ["JEE", "NEET", "CUET", "Boards", "Other"];
-  const validClasses = ["8", "9", "10", "11", "12", "Graduate", "Dropper", "Other"];
+  const validClasses = ["9", "10", "11", "12", "Dropper", "Other"];
   if (!validExams.includes(exam)) {
     return err("invalid_exam", "Please select a valid exam type.", 400);
   }
@@ -55,7 +52,7 @@ export async function POST(req: NextRequest) {
     return err("invalid_class", "Please select a valid class.", 400);
   }
 
-  // Rate limit by email to prevent duplicate registrations
+  // Check for existing registration
   const store = await getStore();
   const existingStudent = await store.findStudentByEmail(email);
   if (existingStudent) {

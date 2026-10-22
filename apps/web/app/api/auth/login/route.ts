@@ -47,7 +47,6 @@ export async function POST(req: NextRequest) {
   const token = await signSession({
     sub: student.id,
     email: student.email,
-    tokenVersion
   });
 
   return withSessionCookie(
