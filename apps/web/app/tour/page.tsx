@@ -8,6 +8,10 @@ import {
   Zap,
   CheckCircle2,
   ArrowRight,
+  Play,
+  BarChart3,
+  MessageCircle,
+  Award,
 } from "lucide-react";
 import Link from "next/link";
 import { TSerif } from "@/components/ui/text-serif";
@@ -21,60 +25,11 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-const tourSteps = [
-  {
-    icon: Video,
-    title: "Join a Study Room",
-    desc: "Click into any live Zoom room — Morning Focus, Afternoon Grind, Evening Session, or Night Owl. Just show up and study alongside others.",
-    color: "accent",
-  },
-  {
-    icon: Clock,
-    title: "Set Your Daily Target",
-    desc: "Each morning, tell us how many hours you plan to study. Your timer starts when you begin, stops when you pause.",
-    color: "gold",
-  },
-  {
-    icon: TrendingUp,
-    title: "Track Your Progress",
-    desc: "See your streaks, weekly totals, and consistency graph. No judging — just honest numbers you can act on.",
-    color: "plum",
-  },
-  {
-    icon: Users,
-    title: "Join the Community",
-    desc: "Hop into Discord channels for your exam group. Find accountability partners, share resources, and celebrate wins together.",
-    color: "teal",
-  },
-  {
-    icon: Star,
-    title: "Take on Challenges",
-    desc: "Start with the 7-Day Challenge. Build streaks, earn badges, and prove to yourself that consistency is a skill you can develop.",
-    color: "berry",
-  },
-  {
-    icon: Zap,
-    title: "Attend Mentor Sessions",
-    desc: "Every week, top aspirants host live Q&A sessions. Learn their strategies, ask about their struggles, and get honest advice.",
-    color: "accent",
-  },
-];
-
-const features = [
-  { text: "Free 7-day trial", icon: CheckCircle2 },
-  { text: "No credit card required", icon: CheckCircle2 },
-  { text: "Cancel anytime", icon: CheckCircle2 },
-  { text: "Mobile-friendly", icon: CheckCircle2 },
-  { text: "Private & secure", icon: CheckCircle2 },
-  { text: "Active community", icon: CheckCircle2 },
-];
-
 export default function TourPage() {
   const stepsRef = useRef<HTMLDivElement>(null);
   const featuresRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Animate tour steps
     if (stepsRef.current) {
       const cards = stepsRef.current.querySelectorAll(".tour-step");
       cards.forEach((card, i) => {
@@ -94,7 +49,6 @@ export default function TourPage() {
       });
     }
 
-    // Animate features
     if (featuresRef.current) {
       const items = featuresRef.current.querySelectorAll(".feature-item");
       gsap.fromTo(
@@ -123,44 +77,100 @@ export default function TourPage() {
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <div className="clay-chip inline-flex items-center gap-2 px-5 py-2 mb-8 animate-float">
             <Video className="size-4 text-gold-deep fill-gold-deep" />
-            <span className="text-xs font-semibold text-ink-muted">Quick Start Guide</span>
+            <span className="text-xs font-semibold text-ink-muted">How PrepArea Works</span>
           </div>
 
           <h1 className="text-5xl md:text-7xl font-black text-ink mb-6" style={{ fontFamily: "var(--font-fraunces)" }}>
-            Take a <span className="text-gradient-gold">Tour</span>
+            Your <span className="text-gradient-gold">Complete Guide</span>
           </h1>
 
           <p className="text-lg text-ink-muted max-w-2xl mx-auto" style={{ fontFamily: "var(--font-outfit)", fontWeight: 300 }}>
-            See how PrepArea works in 6 simple steps. From signing up to acing your exams — we've got you covered.
+            Learn how to use PrepArea effectively to boost your exam preparation. Step-by-step guide from signup to success.
           </p>
         </div>
       </section>
 
-      {/* Tour Steps */}
+      {/* Step-by-Step Tutorial */}
       <section ref={stepsRef} className="py-16 px-4 bg-raised">
-        <div className="mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tourSteps.map((step, i) => (
+        <div className="mx-auto max-w-4xl">
+          <div className="space-y-8">
+            {[
+              {
+                step: "Step 1",
+                icon: Users,
+                title: "Create Your Account",
+                desc: "Sign up with your email and create a secure password. Choose your class (9-12 or Dropper) and the exam you're preparing for (JEE, NEET, CUET, or Boards). This takes less than 2 minutes.",
+                color: "accent",
+                detail: "You'll get instant access to all community features during your 7-day free trial.",
+              },
+              {
+                step: "Step 2",
+                icon: Clock,
+                title: "Set Your Daily Target",
+                desc: "Each morning, tell us how many hours you plan to study. We'll track your progress and send reminders when you check in during the day.",
+                color: "gold",
+                detail: "Start with a realistic target — consistency matters more than intensity.",
+              },
+              {
+                step: "Step 3",
+                icon: Video,
+                title: "Join a Live Study Room",
+                desc: "Click into any of our four scheduled focus sessions: Morning Focus (6-9 AM), Afternoon Grind (12-3 PM), Evening Session (5-8 PM), or Night Owl (9 PM-12 AM). Just show up and study alongside others on Zoom.",
+                color: "plum",
+                detail: "The rooms are monitored but not distracting — it's your space to focus with others.",
+              },
+              {
+                step: "Step 4",
+                icon: BarChart3,
+                title: "Track Your Progress",
+                desc: "Visit your dashboard to see your streaks, weekly totals, and consistency graph. The analytics show you patterns you might miss — like which days you're weakest.",
+                color: "teal",
+                detail: "We never rank you against others. Your progress is personal.",
+              },
+              {
+                step: "Step 5",
+                icon: MessageCircle,
+                title: "Join the Community",
+                desc: "Connect with fellow aspirants on Discord (subject channels, accountability partners) and Telegram (announcements, daily reminders). Find your study squad.",
+                color: "berry",
+                detail: "The community is moderated and safe — no toxic competition, just support.",
+              },
+              {
+                step: "Step 6",
+                icon: Award,
+                title: "Attend Mentor Sessions",
+                desc: "Every week, top aspirants host live Q&A sessions. Learn their strategies, ask about their struggles, and get honest advice that works for real exams.",
+                color: "accent",
+                detail: "Mentors share experience, not curriculum. They've been where you are.",
+              },
+            ].map((item, i) => (
               <div
-                key={step.title}
-                className={`tour-step clay-card-deep p-7 transition-all duration-300 hover:-translate-y-2 hover:shadow-clay-lg`}
+                key={item.step}
+                className="tour-step clay-card-deep p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-clay-lg"
               >
-                <div className={`clay-icon size-14 rounded-2xl bg-gradient-to-br ${
-                  step.color === "accent" ? "from-accent-light to-accent" :
-                  step.color === "gold" ? "from-gold-light to-gold" :
-                  step.color === "plum" ? "from-plum-soft to-plum" :
-                  step.color === "teal" ? "from-teal-soft to-teal" :
-                  "from-berry to-pink-500"
-                } text-white`}>
-                  <step.icon className="size-7" />
-                </div>
-                <h2 className="mt-4 text-xl font-black text-ink" style={{ fontFamily: "var(--font-fraunces)" }}>
-                  {step.title}
-                </h2>
-                <T className="mt-2 text-sm text-ink-muted leading-relaxed">{step.desc}</T>
-                <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-accent">
-                  <span>Step {i + 1}</span>
-                  <ArrowRight className="size-4" />
+                <div className="flex items-start gap-4">
+                  <div className={`clay-icon size-14 rounded-2xl bg-gradient-to-br ${
+                    item.color === "accent" ? "from-accent-light to-accent" :
+                    item.color === "gold" ? "from-gold-light to-gold" :
+                    item.color === "plum" ? "from-plum-soft to-plum" :
+                    item.color === "teal" ? "from-teal-soft to-teal" :
+                    "from-berry to-pink-500"
+                  } text-white shrink-0`}>
+                    <item.icon className="size-7" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-xs font-black uppercase tracking-widest text-accent mb-2 block">
+                      {item.step}
+                    </span>
+                    <h2 className="text-2xl font-black text-ink mb-3" style={{ fontFamily: "var(--font-fraunces)" }}>
+                      {item.title}
+                    </h2>
+                    <T className="text-ink-muted leading-relaxed mb-3">{item.desc}</T>
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 text-gold-deep text-sm font-medium">
+                      <Play className="size-3 fill-gold-deep" />
+                      {item.detail}
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -168,14 +178,21 @@ export default function TourPage() {
         </div>
       </section>
 
-      {/* Features Grid */}
+      {/* What You Get */}
       <section ref={featuresRef} className="py-16 px-4">
         <div className="mx-auto max-w-4xl">
           <h2 className="text-2xl md:text-3xl font-black text-ink mb-10 text-center" style={{ fontFamily: "var(--font-fraunces)" }}>
-            Everything Included
+            Everything Included in Your Trial
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {features.map((feature) => (
+            {[
+              { text: "Free 7-day trial", icon: CheckCircle2 },
+              { text: "No credit card needed", icon: CheckCircle2 },
+              { text: "4 daily study rooms", icon: CheckCircle2 },
+              { text: "Progress analytics", icon: CheckCircle2 },
+              { text: "Community access", icon: CheckCircle2 },
+              { text: "Weekly mentor sessions", icon: CheckCircle2 },
+            ].map((feature) => (
               <div
                 key={feature.text}
                 className="feature-item clay-card flex items-center gap-3 px-5 py-4"
@@ -197,8 +214,7 @@ export default function TourPage() {
 
             <div className="relative z-10">
               <TSerif className="text-3xl md:text-5xl font-black text-ink mb-6">
-                Ready to{" "}
-                <span className="text-gradient-gold">Start?</span>
+                Ready to <span className="text-gradient-gold">Start?</span>
               </TSerif>
               <T className="text-ink-muted text-lg mb-10 max-w-xl mx-auto">
                 Join thousands of aspirants achieving their dreams with PrepArea.
@@ -214,7 +230,7 @@ export default function TourPage() {
                 </Magnetic>
                 <Magnetic strength={0.2}>
                   <Link href="/login">
-                    <span className="clay-btn clay-btn-outline px-10 py-5 text-base font-bold">Login</span>
+                    <span className="clay-btn clay-btn-outline px-10 py-5 text-base font-bold">Sign In</span>
                   </Link>
                 </Magnetic>
               </div>

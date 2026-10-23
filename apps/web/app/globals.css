@@ -1,5 +1,24 @@
 @import "tailwindcss";
 
+/* Performance optimizations */
+@media (prefers-reduced-motion: no-preference) {
+  /* Promote animated elements to their own GPU layer */
+  .orb-glow,
+  .clay-btn-gold,
+  [class*="glow-gold"],
+  .text-gradient-gold {
+    will-change: transform, opacity;
+  }
+}
+
+/* Content visibility for below-fold sections */
+@media (min-width: 768px) {
+  section[data-content-visibility] {
+    content-visibility: auto;
+    content-visibility-initial-contained: true;
+  }
+}
+
 @theme {
   /* Enchanted Study Academy — claymorphic × Disney-fantasy */
   --color-night: #171536;
@@ -416,6 +435,74 @@
     border-radius: var(--radius-clay);
     box-shadow: var(--shadow-clay-sm);
   }
+
+  .label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-ink);
+    margin-bottom: 0.375rem;
+  }
+
+  .input {
+    width: 100%;
+    background-color: var(--color-raised);
+    border: 2px solid transparent;
+    border-radius: 16px;
+    box-shadow: var(--shadow-clay-sm);
+    padding: 0.75rem 1rem;
+    font-size: 0.9375rem;
+    color: var(--color-ink);
+    transition: border-color 200ms ease, box-shadow 200ms ease;
+    outline: none;
+  }
+
+  .input:focus-visible {
+    border-color: var(--color-gold);
+    box-shadow: var(--shadow-clay);
+  }
+
+  .input::placeholder {
+    color: var(--color-ink-faint);
+  }
+
+  .btn-gold {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    background-color: var(--color-gold);
+    color: #4a3003;
+    font-weight: 700;
+    padding: 0.7rem 1.4rem;
+    box-shadow: var(--shadow-clay-sm);
+    cursor: pointer;
+    transition: background-color 200ms ease, box-shadow 200ms ease, transform 160ms ease;
+  }
+
+  .btn-gold:hover {
+    background-color: var(--color-gold-soft);
+  }
+
+  .btn-error {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    background-color: var(--color-berry);
+    color: #fff;
+    font-weight: 700;
+    padding: 0.7rem 1.4rem;
+    box-shadow: var(--shadow-clay-sm);
+    cursor: pointer;
+    transition: background-color 200ms ease, box-shadow 200ms ease, transform 160ms ease;
+  }
+
+  .btn-error:hover {
+    background-color: #c9567a;
+  }
 }
 
 @keyframes pulse-glow {
@@ -429,6 +516,13 @@
       0 0 34px 8px rgba(240, 184, 74, 0.65),
       0 0 90px 22px rgba(240, 184, 74, 0.28);
   }
+}
+
+/* Reduced complexity for better performance */
+.glow-gold {
+  animation: pulse-glow 3.4s ease-in-out infinite;
+  /* Use transform-only animation where possible */
+  transform: translateZ(0);
 }
 
 @keyframes gradient-shift {

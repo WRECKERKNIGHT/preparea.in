@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, memo } from "react";
 
 type Star = {
   x: number;
@@ -19,7 +19,8 @@ const COLORS: Record<Star["hue"], string> = {
   teal: "126,199,208",
 };
 
-export function Stars({ count = 60 }: { count?: number }) {
+// Memoized so it won't re-render unnecessarily
+export const Stars = memo(function Stars({ count = 30 }: { count?: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -35,6 +36,7 @@ export function Stars({ count = 60 }: { count?: number }) {
     let width = 0;
     let height = 0;
     let raf = 0;
+    let ticking = false;
 
     const hud = ["white", "gold", "plum", "teal"] as const;
     const stars: Star[] = Array.from({ length: count }, () => ({
@@ -48,7 +50,7 @@ export function Stars({ count = 60 }: { count?: number }) {
     }));
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5); // Cap DPR at 1.5
       width = window.innerWidth;
       height = window.innerHeight;
       canvas.width = width * dpr;
@@ -60,7 +62,10 @@ export function Stars({ count = 60 }: { count?: number }) {
       ctx.clearRect(0, 0, width, height);
       const time = t * 0.001;
       for (const s of stars) {
-        const tw = reduce ? 1 : 0.55 + 0.45 * Math.sin(time * s.speed + s.phase);
+        // Throttle the sine wave updates — not every frame needs a recalc
+        const tw = reduce
+          ? 1
+          : 0.55 + 0.45 * Math.sin(time * s.speed + s.phase);
         ctx.beginPath();
         ctx.arc(s.x * width, s.y * height, s.r, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${COLORS[s.hue]},${(s.base * tw).toFixed(3)})`;
@@ -70,11 +75,17 @@ export function Stars({ count = 60 }: { count?: number }) {
     };
 
     resize();
-    window.addEventListener("resize", resize);
+    // Throttle resize events
+    let resizeTimer: ReturnType<typeof setTimeout>;
+    const onResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(resize, 250);
+    };
+    window.addEventListener("resize", onResize);
     raf = requestAnimationFrame(draw);
 
     return () => {
-      window.removeEventListener("resize", resize);
+      window.removeEventListener("resize", onResize);
       cancelAnimationFrame(raf);
     };
   }, [count]);
@@ -82,8 +93,8 @@ export function Stars({ count = 60 }: { count?: number }) {
   return (
     <canvas
       ref={ref}
-      className="pointer-events-none fixed inset-0 z-0 opacity-70"
+      className="pointer-events-none fixed inset-0 z-0 opacity-40"
       aria-hidden="true"
     />
   );
-}
+});

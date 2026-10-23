@@ -699,7 +699,7 @@ function RoomsCard({ rooms, onUpdate }: { rooms: DashboardMe["rooms"]; onUpdate:
 
 function MentorsCard({ sessions }: { sessions: DashboardMe["mentorSessions"] }) {
   return (
-    <section className="card p-6">
+    <section className="clay-card-deep p-6">
       <div className="flex items-center gap-2">
         <Mic className="size-5 text-accent" aria-hidden="true" />
         <h2 className="font-medium text-ink">Mentor sessions</h2>
@@ -724,12 +724,12 @@ function MentorsCard({ sessions }: { sessions: DashboardMe["mentorSessions"] }) 
 
 function CommunityCard() {
   return (
-    <section className="card p-6">
+    <section className="clay-card-deep p-6">
       <div className="flex items-center gap-2">
         <Send className="size-5 text-accent" aria-hidden="true" />
         <h2 className="font-medium text-ink">Community</h2>
       </div>
-      <div className="mt-4 space-y-2">
+      <div className="mt-4 space-y-3">
         <a
           href="https://t.me/preparea_announcements"
           target="_blank"
