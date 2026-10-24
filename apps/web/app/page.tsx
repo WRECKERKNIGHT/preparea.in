@@ -1,184 +1,201 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
-import { Star, ArrowRight, Play, ChevronDown, Clock, TrendingUp, Users, Shield, BookOpen, BarChart3, CheckCircle2, Zap } from "lucide-react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ArrowRight, Star, Play, ChevronDown, CheckCircle2, Zap, Shield, Clock, Users, BookOpen, BarChart3 } from "lucide-react";
 
-function HeroFallback() {
+/* ══════════════════════════════════════════════════════════════════
+   PREMIUM HERO SECTION — Mesh Gradient + Animated Orbs
+   ══════════════════════════════════════════════════════════════════ */
+
+function HeroOrbs() {
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-[#171536] flex items-center justify-center">
-      <div className="text-center">
-        <div className="text-6xl md:text-8xl font-black text-white mb-6" style={{ fontFamily: "var(--font-fraunces)" }}>
-          Study Smarter,{" "}
-          <span className="text-transparent bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text" style={{ fontFamily: "var(--font-fraunces)" }}>
-            Not Harder
-          </span>
-        </div>
-        <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-12 leading-relaxed">
-          The all-in-one study community for JEE, NEET, and board exam aspirants.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/register">
-            <span className="inline-flex items-center gap-2 px-10 py-5 bg-gradient-to-r from-yellow-500 to-amber-500 text-yellow-950 font-black text-base rounded-full shadow-lg hover:scale-105 transition-transform duration-200">
-              Start Free Trial
-              <ArrowRight className="size-5" />
-            </span>
-          </Link>
-          <Link href="/tour">
-            <span className="inline-flex items-center gap-2 px-10 py-5 bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold text-base rounded-full hover:bg-white/20 transition-all duration-200">
-              <Play className="size-4" />
-              Watch Demo
-            </span>
-          </Link>
-        </div>
-      </div>
-    </div>
+    <>
+      {/* Primary purple orb */}
+      <div
+        className="orb orb-primary w-[800px] h-[800px] -top-40 -left-40 animate-float"
+        aria-hidden="true"
+      />
+
+      {/* Secondary green orb */}
+      <div
+        className="orb orb-secondary w-[600px] h-[600px] top-20 right-0 animate-float"
+        style={{ animationDelay: '2s' }}
+        aria-hidden="true"
+      />
+
+      {/* Accent blue orb */}
+      <div
+        className="orb w-[400px] h-[400px] bottom-20 left-1/4"
+        style={{
+          background: 'radial-gradient(circle, rgba(59, 130, 246, 0.3), transparent 70%)',
+          animation: 'float 8s ease-in-out infinite'
+        }}
+        aria-hidden="true"
+      />
+    </>
   );
 }
 
-const HeroScene3D = dynamic(() => import("@/components/hero-scene-3d").then(mod => ({ default: mod.HeroScene3D })), { ssr: false, loading: () => <HeroFallback /> });
-
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   FLOATING ORBS BACKGROUND
-   ══════════════════════════════════════════════════════════════════ */
-function BackgroundOrbs() {
-  return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
-      <div className="orb-glow absolute -top-32 -left-32 w-[600px] h-[600px] bg-gold/15 rounded-full blur-3xl" />
-      <div className="orb-glow absolute -bottom-40 -right-40 w-[700px] h-[700px] bg-plum/12 rounded-full blur-3xl" />
-      <div className="orb-glow absolute top-1/3 right-[10%] w-[350px] h-[350px] bg-teal/10 rounded-full blur-3xl" />
-      <div className="orb-glow absolute bottom-[20%] left-[5%] w-[300px] h-[300px] bg-berry/8 rounded-full blur-3xl" />
-      <div className="absolute top-[12%] left-[8%] w-3 h-3 rounded-full bg-gold/50 animate-float shadow-clay-sm" />
-      <div className="absolute top-[28%] right-[12%] w-4 h-4 rounded-full bg-plum/40 animate-float-slow" />
-      <div className="absolute top-[45%] left-[15%] w-3 h-3 rounded-full bg-accent/40 animate-float" style={{ animationDelay: "1s" }} />
-      <div className="absolute bottom-[35%] right-[20%] w-4 h-4 rounded-full bg-teal/35 animate-float-slow" style={{ animationDelay: "2s" }} />
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   TRUST BAR
-   ══════════════════════════════════════════════════════════════════ */
-function TrustBar() {
-  const items = [
-    { icon: <CheckCircle2 className="size-5 text-accent" />, text: "Free 7-day trial" },
-    { icon: <Zap className="size-5 text-gold" />, text: "Instant setup" },
-    { icon: <Shield className="size-5 text-plum" />, text: "Secure & private" },
-  ];
-
-  return (
-    <div className="bg-raised border-y border-edge/40 py-4">
-      <div className="mx-auto max-w-4xl flex flex-wrap justify-center gap-8 px-4">
-        {items.map((item) => (
-          <div key={item.text} className="flex items-center gap-2">
-            {item.icon}
-            <span className="text-sm text-ink-muted font-medium">{item.text}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   HERO SECTION
-   ══════════════════════════════════════════════════════════════════ */
-function HeroSection() {
-  const titleRef = useRef<HTMLDivElement>(null);
-  const subtitleRef = useRef<HTMLDivElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
+function HeroParticles() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    // Entrance animations
-    if (titleRef.current) {
-      gsap.fromTo(titleRef.current,
-        { opacity: 0, y: 60 },
-        { opacity: 1, y: 0, duration: 1, ease: "power3.out" }
-      );
-    }
-    if (subtitleRef.current) {
-      gsap.fromTo(subtitleRef.current,
-        { opacity: 0, y: 40 },
-        { opacity: 1, y: 0, duration: 1, delay: 0.3, ease: "power3.out" }
-      );
-    }
-    if (ctaRef.current) {
-      gsap.fromTo(ctaRef.current,
-        { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, duration: 1, delay: 0.6, ease: "power3.out" }
-      );
-    }
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    let particles: Array<{
+      x: number;
+      y: number;
+      size: number;
+      speedX: number;
+      speedY: number;
+      opacity: number;
+    }> = [];
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = 600;
+    };
+
+    const createParticles = () => {
+      particles = Array.from({ length: 50 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 2 + 0.5,
+        speedX: (Math.random() - 0.5) * 0.5,
+        speedY: (Math.random() - 0.5) * 0.5,
+        opacity: Math.random() * 0.5 + 0.2,
+      }));
+    };
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach(p => {
+        p.x += p.speedX;
+        p.y += p.speedY;
+
+        if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(167, 139, 250, ${p.opacity})`;
+        ctx.fill();
+      });
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    resize();
+    createParticles();
+    animate();
+
+    window.addEventListener('resize', resize);
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(animationFrameId);
+    };
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-4 pt-20 pb-16 overflow-hidden">
-      <BackgroundOrbs />
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full pointer-events-none opacity-60"
+      aria-hidden="true"
+    />
+  );
+}
 
-      <div className="relative z-10 max-w-6xl mx-auto text-center">
-        {/* Badge */}
-        <div className="clay-chip inline-flex items-center gap-2 px-5 py-2 mb-8" style={{ animation: "float 7s ease-in-out infinite" }}>
-          <Star className="size-3.5 text-gold-deep fill-gold-deep" />
-          <span className="text-xs font-semibold text-ink-muted">Trusted by 10,000+ aspirants across India</span>
-        </div>
+function HeroSection() {
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Mesh Gradient Background */}
+      <div className="absolute inset-0 mesh-gradient" />
 
-        {/* Main Heading */}
-        <div ref={titleRef} className="mb-8">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[1.08] text-ink" style={{ fontFamily: "var(--font-fraunces)" }}>
-            Study Smarter,{" "}
-            <span className="text-gradient-gold">Not Harder</span>
+      {/* Animated Orbs */}
+      <HeroOrbs />
+
+      {/* Particle Canvas */}
+      <HeroParticles />
+
+      {/* Grid Overlay */}
+      <div
+        className="absolute inset-0 opacity-5"
+        style={{
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                           linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+          backgroundSize: '60px 60px'
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Content */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+        <div className="text-center">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-8 animate-float">
+            <Star className="size-4 text-amber-400 fill-amber-400" />
+            <span className="text-sm font-medium text-gray-300">
+              Trusted by 10,000+ aspirants
+            </span>
+          </div>
+
+          {/* Main Heading */}
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-tight mb-8">
+            <span className="block text-white">Study Smarter,</span>
+            <span className="gradient-text">Not Harder</span>
           </h1>
-        </div>
 
-        {/* Subheading */}
-        <div ref={subtitleRef}>
-          <p className="text-lg md:text-xl text-ink-muted max-w-2xl mx-auto mb-12 leading-relaxed" style={{ fontFamily: "var(--font-outfit)", fontWeight: 300 }}>
+          {/* Subheading */}
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed">
             The all-in-one study community for JEE, NEET, and board exam aspirants.
             Track progress, join live rooms, and achieve your dream rank — together.
           </p>
-        </div>
 
-        {/* CTA Buttons */}
-        <div ref={ctaRef} className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-          <Link href="/register">
-            <span className="clay-btn clay-btn-gold px-10 py-5 text-base font-black shadow-clay-lg glow-gold inline-flex items-center gap-2 transition-all duration-200 hover:scale-105">
-              Start Free Trial
-              <ArrowRight className="size-5" />
-            </span>
-          </Link>
-          <Link href="/tour">
-            <span className="clay-btn clay-btn-outline px-10 py-5 text-base font-bold inline-flex items-center gap-2 transition-all duration-200 hover:scale-105">
-              <Play className="size-4" />
-              Watch Demo
-            </span>
-          </Link>
-        </div>
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            <Link href="/register">
+              <button className="btn-premium btn-primary group">
+                Start Free Trial
+                <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </Link>
+            <Link href="/tour">
+              <button className="btn-premium btn-secondary">
+                <Play className="size-4 fill-current" />
+                Watch Demo
+              </button>
+            </Link>
+          </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-          {[
-            { value: "10K+", label: "Active Students" },
-            { value: "500K+", label: "Study Hours" },
-            { value: "94%", label: "Success Rate" },
-            { value: "150+", label: "Mentors" },
-          ].map((stat) => (
-            <div key={stat.label} className="clay-card-night flex flex-col items-center gap-2 p-5">
-              <span className="text-2xl md:text-3xl font-black text-gold" style={{ fontFamily: "var(--font-fraunces)" }}>{stat.value}</span>
-              <span className="text-xs text-white/60 font-medium">{stat.label}</span>
-            </div>
-          ))}
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+            {[
+              { value: "10K+", label: "Active Students", icon: Users },
+              { value: "500K+", label: "Study Hours", icon: Clock },
+              { value: "94%", label: "Success Rate", icon: BarChart3 },
+              { value: "150+", label: "Mentors", icon: BookOpen },
+            ].map((stat) => (
+              <div key={stat.label} className="glass-card p-6 text-center">
+                <stat.icon className="size-6 text-purple-400 mx-auto mb-3" />
+                <div className="text-2xl md:text-3xl font-black text-white">{stat.value}</div>
+                <div className="text-sm text-gray-400 mt-1">{stat.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Scroll Indicator */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-        <ChevronDown className="size-8 text-ink-muted" />
+        <ChevronDown className="size-8 text-gray-500" />
       </div>
     </section>
   );
@@ -187,63 +204,89 @@ function HeroSection() {
 /* ══════════════════════════════════════════════════════════════════
    FEATURES SECTION
    ══════════════════════════════════════════════════════════════════ */
+
 const FEATURES = [
-  { icon: <Clock className="size-5" />, title: "Smart Study Timer", desc: "Pomodoro-style timer with room selection, session notes, and auto-tracking.", color: "accent" },
-  { icon: <BarChart3 className="size-5" />, title: "Analytics Dashboard", desc: "Daily, weekly & monthly trends at a glance. See streaks and patterns.", color: "gold" },
-  { icon: <Users className="size-5" />, title: "Live Study Rooms", desc: "Join scheduled group sessions with peers prepping for the same exam.", color: "plum" },
-  { icon: <Shield className="size-5" />, title: "Password Security", desc: "Instant login with scrypt-hashed passwords — no more OTP waiting.", color: "teal" },
-  { icon: <Star className="size-5" />, title: "Challenge System", desc: "7-day consistency challenges, streak rewards, and friendly competition.", color: "berry" },
-  { icon: <BookOpen className="size-5" />, title: "Mentor Sessions", desc: "Learn from successful IIT / AIIMS aspirants through live Q&A.", color: "accent" },
+  {
+    icon: Users,
+    title: "Virtual Study Rooms",
+    desc: "Four scheduled focus sessions daily — Morning, Afternoon, Evening, and Night. Study alongside peers in real-time.",
+    color: "from-purple-500 to-violet-500",
+  },
+  {
+    icon: Target,
+    title: "Daily Targets",
+    desc: "Set one number each morning: how many hours you'll study today. Track it simply, hit it consistently.",
+    color: "from-amber-500 to-orange-500",
+  },
+  {
+    icon: Clock,
+    title: "Study-Time Tracking",
+    desc: "Log your time in the app or track live with a built-in timer. Progress is personal — no leaderboards.",
+    color: "from-emerald-500 to-teal-500",
+  },
+  {
+    icon: CalendarCheck,
+    title: "Consistency Challenges",
+    desc: "Start with the 7-Day Challenge. Build streaks, earn badges, and prove consistency is a skill.",
+    color: "from-blue-500 to-cyan-500",
+  },
+  {
+    icon: TrendingUp,
+    title: "Personal Progress",
+    desc: "Clean weekly view of minutes studied, streaks, and whether you hit your daily target.",
+    color: "from-purple-500 to-pink-500",
+  },
+  {
+    icon: MessageSquare,
+    title: "Community",
+    desc: "Discord for conversation, Telegram for announcements. Clear rules from day one.",
+    color: "from-emerald-500 to-green-500",
+  },
+  {
+    icon: Mic,
+    title: "Mentor Sessions",
+    desc: "Experienced aspirants share their journey — strategies, mistakes, and how they stayed consistent.",
+    color: "from-amber-500 to-yellow-500",
+  },
+  {
+    icon: Shield,
+    title: "Safe Environment",
+    desc: "Strict moderation, privacy-focused, and no guaranteed-rank claims. Just real advice.",
+    color: "from-blue-500 to-indigo-500",
+  },
 ];
 
 function FeaturesSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    if (!sectionRef.current) return;
-
-    const cards = sectionRef.current.querySelectorAll(".feature-card");
-    cards.forEach((card, index) => {
-      gsap.fromTo(card,
-        { opacity: 0, y: 40 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.7,
-          delay: index * 0.1,
-          ease: "power2.out",
-          scrollTrigger: { trigger: card, start: "top 85%" },
-        }
-      );
-    });
-  }, []);
-
   return (
-    <section ref={sectionRef} className="relative py-24 px-4 bg-raised">
-      <div className="mx-auto max-w-6xl">
-        <div className="text-center mb-14">
-          <span className="text-xs font-black uppercase tracking-[0.2em] text-accent mb-3 block">Everything you need</span>
-          <h2 className="text-3xl md:text-5xl font-black text-ink mb-4" style={{ fontFamily: "var(--font-fraunces)" }}>Powerful Features</h2>
-          <p className="text-ink-muted max-w-xl mx-auto">Designed to keep you focused, track your growth, and connect you with the community.</p>
+    <section className="relative py-32 overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/10 to-transparent" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-20">
+          <span className="inline-block px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm font-semibold mb-6">
+            Everything You Need
+          </span>
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
+            Powerful <span className="gradient-text">Features</span>
+          </h2>
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+            Designed to keep you focused, track your growth, and connect you with the community.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {FEATURES.map((f, i) => {
-            const iconBgs: Record<string, string> = {
-              accent: "bg-accent-light text-accent",
-              gold: "bg-gold-light text-gold-deep",
-              plum: "bg-purple-100 text-plum",
-              teal: "bg-teal/15 text-teal",
-              berry: "bg-pink-100 text-berry",
-            };
-            return (
-              <div key={f.title} className={`feature-card clay-card flex flex-col gap-4 p-7 transition-all duration-200 hover:-translate-y-1 hover:shadow-clay`}>
-                <div className={`clay-icon size-12 ${iconBgs[f.color]}`}>{f.icon}</div>
-                <h3 className="text-lg font-bold text-ink" style={{ fontFamily: "var(--font-fraunces)" }}>{f.title}</h3>
-                <p className="text-sm text-ink-muted leading-relaxed flex-1">{f.desc}</p>
+        {/* Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {FEATURES.map((feature, i) => (
+            <div key={feature.title} className="glass-card p-8 group">
+              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                <feature.icon className="size-7 text-white" />
               </div>
-            );
-          })}
+              <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
+              <p className="text-gray-400 leading-relaxed">{feature.desc}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -253,47 +296,44 @@ function FeaturesSection() {
 /* ══════════════════════════════════════════════════════════════════
    HOW IT WORKS SECTION
    ══════════════════════════════════════════════════════════════════ */
+
 const STEPS = [
-  { num: "1", title: "Create Account", desc: "Sign up in 30 seconds with email and password — instant access." },
+  { num: "1", title: "Create Account", desc: "Sign up in 30 seconds with email and password. Instant access." },
   { num: "2", title: "Set Your Goals", desc: "Pick your exam, class, and daily study target." },
-  { num: "3", title: "Start Studying", desc: "Use timers, join rooms, track streaks, and climb the leaderboard." },
+  { num: "3", title: "Start Studying", desc: "Use timers, join rooms, track streaks, and climb." },
 ];
 
 function HowItWorksSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    if (!sectionRef.current) return;
-
-    const cards = sectionRef.current.querySelectorAll(".step-card");
-    cards.forEach((card, index) => {
-      gsap.fromTo(card,
-        { opacity: 0, x: index % 2 === 0 ? -40 : 40 },
-        {
-          opacity: 1,
-          x: 0,
-          duration: 0.6,
-          delay: index * 0.15,
-          ease: "power2.out",
-          scrollTrigger: { trigger: card, start: "top 85%" },
-        }
-      );
-    });
-  }, []);
-
   return (
-    <section ref={sectionRef} id="how-it-works" className="relative py-24 px-4">
-      <div className="mx-auto max-w-4xl">
-        <div className="text-center mb-14">
-          <span className="text-xs font-black uppercase tracking-[0.2em] text-accent mb-3 block">Simple process</span>
-          <h2 className="text-3xl md:text-5xl font-black text-ink" style={{ fontFamily: "var(--font-fraunces)" }}>How It Works</h2>
+    <section className="relative py-32">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-20">
+          <span className="inline-block px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-semibold mb-6">
+            Simple Process
+          </span>
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
+            How It <span className="gradient-text">Works</span>
+          </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {STEPS.map((s, i) => (
-            <div key={s.num} className="step-card clay-card p-8 text-center flex flex-col items-center gap-4">
-              <div className="w-14 h-14 rounded-full clay-icon-gold text-xl font-black flex items-center justify-center">{s.num}</div>
-              <h3 className="text-xl font-bold text-ink" style={{ fontFamily: "var(--font-fraunces)" }}>{s.title}</h3>
-              <p className="text-sm text-ink-muted leading-relaxed">{s.desc}</p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {STEPS.map((step, i) => (
+            <div key={step.num} className="relative">
+              {/* Number */}
+              <div className="text-8xl font-black text-white/5 absolute -top-6 -left-4 select-none">
+                {step.num}
+              </div>
+
+              {/* Content */}
+              <div className="relative glass-card p-8 pt-12">
+                <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
+                <p className="text-gray-400">{step.desc}</p>
+              </div>
+
+              {/* Connector */}
+              {i < STEPS.length - 1 && (
+                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-purple-500 to-transparent" />
+              )}
             </div>
           ))}
         </div>
@@ -305,52 +345,59 @@ function HowItWorksSection() {
 /* ══════════════════════════════════════════════════════════════════
    TESTIMONIALS SECTION
    ══════════════════════════════════════════════════════════════════ */
+
 const TESTIMONIALS = [
-  { quote: "PrepArea helped me stay consistent for the first time. Went from 2 hrs/day to 8 hrs/day over 3 months.", name: "Aarav P.", exam: "JEE Advanced" },
-  { quote: "The study rooms made me feel less alone. Studying alongside 20 other NEET aspirants kept me focused.", name: "Priya S.", exam: "NEET" },
-  { quote: "Analytics showed me my weak patterns — I fixed them before the boards and scored 96%.", name: "Rohan M.", exam: "Class 12 Boards" },
+  {
+    quote: "PrepArea helped me stay consistent for the first time. Went from 2 hrs/day to 8 hrs/day over 3 months.",
+    name: "Aarav P.",
+    exam: "JEE Advanced",
+  },
+  {
+    quote: "The study rooms made me feel less alone. Studying alongside 20 other NEET aspirants kept me focused.",
+    name: "Priya S.",
+    exam: "NEET",
+  },
+  {
+    quote: "Analytics showed me my weak patterns — I fixed them before the boards and scored 96%.",
+    name: "Rohan M.",
+    exam: "Class 12 Boards",
+  },
 ];
 
 function TestimonialsSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    if (!sectionRef.current) return;
-
-    const cards = sectionRef.current.querySelectorAll(".testimonial-card");
-    cards.forEach((card, index) => {
-      gsap.fromTo(card,
-        { opacity: 0, y: 30 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.5,
-          delay: index * 0.1,
-          ease: "power2.out",
-          scrollTrigger: { trigger: card, start: "top 90%" },
-        }
-      );
-    });
-  }, []);
-
   return (
-    <section ref={sectionRef} className="relative py-24 px-4 bg-night text-white overflow-hidden">
-      <div className="absolute inset-0 stars opacity-50" aria-hidden="true" />
-      <div className="relative z-10 mx-auto max-w-6xl">
-        <div className="text-center mb-14">
-          <span className="text-xs font-black uppercase tracking-[0.2em] text-gold mb-3 block">What they say</span>
-          <h2 className="text-3xl md:text-5xl font-black" style={{ fontFamily: "var(--font-fraunces)" }}>Loved by Aspirants</h2>
+    <section className="relative py-32">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-900/10 to-transparent" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-20">
+          <span className="inline-block px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm font-semibold mb-6">
+            What They Say
+          </span>
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
+            Loved by <span className="gradient-text">Aspirants</span>
+          </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {TESTIMONIALS.map((t, i) => (
-            <div key={t.name} className="testimonial-card clay-card-deep p-8 flex flex-col gap-4">
-              <div className="flex gap-1">
-                {[...Array(5)].map((_, idx) => <Star key={idx} className="size-4 text-gold fill-gold" />)}
+            <div key={t.name} className="glass-card p-8">
+              {/* Stars */}
+              <div className="flex gap-1 mb-6">
+                {[...Array(5)].map((_, idx) => (
+                  <Star key={idx} className="size-5 text-amber-400 fill-amber-400" />
+                ))}
               </div>
-              <p className="text-ink leading-relaxed italic">"{t.quote}"</p>
+
+              {/* Quote */}
+              <p className="text-gray-300 text-lg leading-relaxed mb-6 italic">
+                "{t.quote}"
+              </p>
+
+              {/* Author */}
               <div>
-                <p className="font-bold text-ink text-sm">{t.name}</p>
-                <p className="text-xs text-ink-muted">{t.exam}</p>
+                <p className="font-bold text-white">{t.name}</p>
+                <p className="text-sm text-gray-500">{t.exam}</p>
               </div>
             </div>
           ))}
@@ -363,44 +410,42 @@ function TestimonialsSection() {
 /* ══════════════════════════════════════════════════════════════════
    CTA SECTION
    ══════════════════════════════════════════════════════════════════ */
+
 function CTASection() {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!ref.current) return;
-    gsap.fromTo(ref.current,
-      { opacity: 0, y: 40 },
-      { opacity: 1, y: 0, duration: 0.7, ease: "power2.out", scrollTrigger: { trigger: ref.current, start: "top 85%" } }
-    );
-  }, []);
-
   return (
-    <section className="relative py-28 px-4">
-      <div ref={ref} className="mx-auto max-w-3xl">
-        <div className="clay-card-deep p-12 md:p-16 relative overflow-hidden">
-          <div className="orb-glow absolute -top-16 -right-16 w-64 h-64 bg-gold/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="orb-glow absolute -bottom-16 -left-16 w-64 h-64 bg-plum/20 rounded-full blur-3xl pointer-events-none" />
+    <section className="relative py-32">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="glass-card p-16 relative overflow-hidden">
+          {/* Glow Effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-transparent to-emerald-500/20" />
 
-          <div className="relative z-10 text-center">
-            <h2 className="text-3xl md:text-5xl font-black text-ink mb-6 leading-tight" style={{ fontFamily: "var(--font-fraunces)" }}>
-              Ready to Transform<br />Your{" "}
-              <span className="text-gradient-gold">Preparation?</span>
+          <div className="relative z-10">
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
+              Ready to Transform<br />
+              <span className="gradient-text">Your Preparation?</span>
             </h2>
-            <p className="text-ink-muted text-lg mb-10 max-w-xl mx-auto" style={{ fontFamily: "var(--font-outfit)" }}>
+
+            <p className="text-xl text-gray-400 mb-12 max-w-xl mx-auto">
               Join thousands of aspirants who are already achieving their dreams with PrepArea.
             </p>
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/register">
-                <span className="clay-btn clay-btn-gold px-10 py-5 text-base font-black inline-flex items-center gap-2 transition-all duration-200 hover:scale-105">
+                <button className="btn-premium btn-primary">
                   Start Free Trial
                   <ArrowRight className="size-5" />
-                </span>
+                </button>
               </Link>
               <Link href="/login">
-                <span className="clay-btn clay-btn-outline px-10 py-5 text-base font-bold transition-all duration-200 hover:scale-105">Login</span>
+                <button className="btn-premium btn-secondary">
+                  Login
+                </button>
               </Link>
             </div>
-            <p className="text-xs text-ink-faint mt-8">No credit card required · Cancel anytime · Free 7-day trial</p>
+
+            <p className="text-sm text-gray-500 mt-8">
+              No credit card required · Cancel anytime · Free 7-day trial
+            </p>
           </div>
         </div>
       </div>
@@ -411,15 +456,13 @@ function CTASection() {
 /* ══════════════════════════════════════════════════════════════════
    PAGE EXPORT
    ══════════════════════════════════════════════════════════════════ */
+
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-paper overflow-x-hidden">
-      <TrustBar />
-      <HeroScene3D />
-      <div className="dotted-light h-px w-full max-w-4xl mx-auto" aria-hidden="true" />
+    <main className="relative min-h-screen bg-bg-black overflow-x-hidden">
+      <HeroSection />
       <FeaturesSection />
       <HowItWorksSection />
-      <div className="dotted-light h-px w-full max-w-4xl mx-auto" aria-hidden="true" />
       <TestimonialsSection />
       <CTASection />
     </main>
