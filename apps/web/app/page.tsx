@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, Star, Play, ChevronDown, CheckCircle2, Zap, Shield, Clock, Users, BookOpen, BarChart3 } from "lucide-react";
+import { ArrowRight, Star, Play, ChevronDown, CheckCircle2, Zap, Shield, Clock, Users, BookOpen, BarChart3, Target, CalendarCheck, TrendingUp, MessageSquare, Mic } from "lucide-react";
 
 /* ══════════════════════════════════════════════════════════════════
    PREMIUM HERO SECTION — Mesh Gradient + Animated Orbs
